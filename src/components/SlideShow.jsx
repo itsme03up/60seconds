@@ -16,9 +16,9 @@ export default function SlideShow({ prepData, onBackToEdit }) {
     { type: 'slide', title: 'Summary（まとめ）', content: prepData.summary },
   ]
 
-  // 参考リンクがある場合は追加
+  // 参考リンクがある場合はReasonの後に挿入
   if (prepData.referenceLink) {
-    slides.push({ type: 'link', url: prepData.referenceLink })
+    slides.splice(2, 0, { type: 'link', url: prepData.referenceLink })
   }
 
   // 自動スライド送り
@@ -43,10 +43,12 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   }, [isCompleted])
 
   const handlePrevSlide = () => {
+    console.log('Previous button clicked, current slide:', currentSlide)
     setCurrentSlide(prev => Math.max(0, prev - 1))
   }
 
   const handleNextSlide = () => {
+    console.log('Next button clicked, current slide:', currentSlide)
     setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
   }
 
