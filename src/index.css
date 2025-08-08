@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* カスタムアニメーション */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* スライドショー用のスタイル */
+.slide-content {
+  transition: all 0.3s ease-in-out;
+}
+
+.slide-content.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide-content.exit {
+  opacity: 0;
+  transform: translateX(-100%);
+}
