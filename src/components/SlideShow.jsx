@@ -1,29 +1,73 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from './ui/button'
-import { useTimer } from '../hooks/useTimer'
 import MarkdownSlide from './MarkdownSlide'
 import LinkPreview from './LinkPreview'
 
 export default function SlideShow({ prepData, onBackToEdit }) {
-  const [currentSlide, setCurrentSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
-  const { timeElapsed, timeRemaining, progress, isCompleted, setSec } = useTimer(60, isPlaying)
+  
+  // ① 可変にも対応できるよう定義（prepDataから取得、デフォルトは15秒）
+  const durations = [
+    prepData.durations?.point || 15,
+    prepData.durations?.reason || 15,
+    prepData.durations?.example || 15,
+    prepData.durations?.summary || 15
+  ]
+  const edges = durations.reduce((a, s) => { a.push((a.at(-1) || 0) + s); return a; }, [])
+  const total = edges.at(-1)
+  
+  // ② 再生位置の管理（RAFで秒ドリフトを回避）
+  const startRef = useRef(performance.now())
+  const offsetRef = useRef(0)
+  const rafRef = useRef(0)
+  const [t, setT] = useState(0)
 
-  // デバッグログ用のuseEffect
+  // ② タイマーループの実装
   useEffect(() => {
-    console.log('SlideShow Debug:', {
-      currentSlide,
-      totalSlides: slides.length,
-      isPlaying,
-      timeElapsed: Math.floor(timeElapsed),
-      prepData: {
-        point: prepData.point?.length || 0,
-        reason: prepData.reason?.length || 0,
-        example: prepData.example?.length || 0,
-        summary: prepData.summary?.length || 0
+    cancelAnimationFrame(rafRef.current)
+    
+    const loop = () => {
+      if (isPlaying) {
+        const nowSec = (performance.now() - startRef.current) / 1000 + offsetRef.current
+        const clampedT = Math.min(nowSec, total)
+        setT(clampedT)
+        
+        if (nowSec < total) {
+          rafRef.current = requestAnimationFrame(loop)
+        }
       }
-    });
-  }, [currentSlide, isPlaying, timeElapsed]);
+    }
+    
+    if (isPlaying) {
+      rafRef.current = requestAnimationFrame(loop)
+    }
+    
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [isPlaying, total])
+
+  // ③ t→idx 変換（可変長対応）
+  const currentSlide = edges.findIndex(edge => t < edge)
+  const validCurrentSlide = currentSlide === -1 ? edges.length - 1 : currentSlide
+  
+  // ④ 手動移動：タイムラインを「そのスライドの先頭時刻」に同期
+  const goTo = (target) => {
+    const clamped = Math.max(0, Math.min(target, durations.length - 1))
+    const targetStart = (edges[clamped - 1] ?? 0) // そのスライド開始秒
+    const now = performance.now()
+    // startTs を再定義して、次フレーム以降もこのスライドになるように
+    startRef.current = now - (targetStart - offsetRef.current) * 1000
+    offsetRef.current = 0
+    setT(targetStart) // 表示も即時反映
+  }
+
+  const handleNextSlide = () => goTo(validCurrentSlide + 1)
+  const handlePrevSlide = () => goTo(validCurrentSlide - 1)
+
+  // 計算値
+  const timeElapsed = t
+  const timeRemaining = total - t
+  const progress = (t / total) * 100
+  const isCompleted = t >= total
 
   // スライドデータの準備
   const slides = [
@@ -39,17 +83,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
     { type: 'slide', title: 'Summary（まとめ）', content: prepData.summary },
   ]
 
-  // 自動スライド送り
-  useEffect(() => {
-    if (isPlaying && timeElapsed > 0) {
-      const slideInterval = 60 / slides.length // 各スライドの表示時間
-      const targetSlide = Math.floor(timeElapsed / slideInterval)
-      
-      if (targetSlide !== currentSlide && targetSlide < slides.length) {
-        setCurrentSlide(targetSlide)
-      }
-    }
-  }, [timeElapsed, isPlaying, slides.length, currentSlide])
+  // 自動スライド送りは削除（再生位置ベースに変更）
 
   // スライドショー完了時の処理
   useEffect(() => {
@@ -75,18 +109,16 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           break
         case 'ArrowLeft':
           event.preventDefault()
-          setCurrentSlide(prev => Math.max(0, prev - 1));
+          handlePrevSlide()
           break
         case 'ArrowRight':
           event.preventDefault()
-          setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1));
+          handleNextSlide()
           break
         case 'r':
         case 'R':
           event.preventDefault()
-          setSec(0)
-          setCurrentSlide(0)
-          setIsPlaying(true)
+          handleReset()
           break
         case 'Escape':
           event.preventDefault()
@@ -94,11 +126,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           break
         case 'Home':
           event.preventDefault()
-          setCurrentSlide(0)
+          goTo(0)
           break
         case 'End':
           event.preventDefault()
-          setCurrentSlide(slides.length - 1)
+          goTo(slides.length - 1)
           break
         default:
           break
@@ -107,23 +139,18 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [onBackToEdit, slides.length, setSec])
+  }, [onBackToEdit, slides.length])
 
-  const handlePrevSlide = () => {
-    setCurrentSlide(prev => Math.max(0, prev - 1));
-  }
-
-  const handleNextSlide = () => {
-    setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1));
-  }
+  // 削除された重複関数定義
 
   const handleTogglePlay = () => {
     setIsPlaying(prev => !prev)
   }
 
   const handleReset = () => {
-    setSec(0)
-    setCurrentSlide(0)
+    startRef.current = performance.now()
+    offsetRef.current = 0
+    setT(0)
     setIsPlaying(true)
   }
 
@@ -143,14 +170,14 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           </Button>
           <div className="flex flex-col">
             <span className="text-lg font-mono">
-              {slides.length > 0 ? `${currentSlide + 1} / ${slides.length}` : '0 / 0'}
+              {slides.length > 0 ? `${validCurrentSlide + 1} / ${slides.length}` : '0 / 0'}
             </span>
             <span className="text-sm text-gray-300">
-              {slides[currentSlide] ? slides[currentSlide].title.split('（')[0] : ''}
+              {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
             </span>
             {/* デバッグ情報 */}
             <span className="text-xs text-yellow-300">
-              Current: {currentSlide} | Playing: {isPlaying ? 'YES' : 'NO'}
+              Current: {validCurrentSlide} | Playing: {isPlaying ? 'YES' : 'NO'} | t: {t.toFixed(1)} | Total: {total}s
             </span>
           </div>
         </div>
@@ -190,7 +217,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       <div className="bg-gray-100 px-4 py-2">
         <div className="flex justify-between items-center mb-2">
           <div className="text-sm font-medium text-gray-700">
-            {currentSlide + 1}/{slides.length} {slides[currentSlide] ? slides[currentSlide].title.split('（')[0] : ''}
+            {validCurrentSlide + 1}/{slides.length} {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
           </div>
           <div className="text-sm text-gray-600">
             残り {Math.floor(timeRemaining)}秒
@@ -231,7 +258,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           <div
             className="absolute top-0 bottom-0 bg-red-500 bg-opacity-20 transition-all duration-300"
             style={{ 
-              left: `${(currentSlide / slides.length) * 100}%`,
+              left: `${(validCurrentSlide / slides.length) * 100}%`,
               width: `${100 / slides.length}%`
             }}
           />
@@ -239,7 +266,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           {/* 現在のスライド位置マーカー */}
           <div
             className="absolute top-0 bottom-0 w-1 bg-red-500 transition-all duration-300 z-20"
-            style={{ left: `${(currentSlide / slides.length) * 100}%` }}
+            style={{ left: `${(validCurrentSlide / slides.length) * 100}%` }}
           >
             <div className="absolute -top-5 left-0 transform -translate-x-1/2 text-xs font-bold text-red-600">
               ▼
@@ -252,28 +279,28 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       <div 
         className="flex-1 relative overflow-hidden"
         role="region"
-        aria-label={slides[currentSlide] ? slides[currentSlide].title || 'スライド' : 'スライド'}
+        aria-label={slides[validCurrentSlide] ? slides[validCurrentSlide].title || 'スライド' : 'スライド'}
       >
         {slides.length > 0 ? (
           slides.map((slide, index) => (
             <div
               key={index}
               className={`absolute inset-0 transition-all duration-500 ${
-                index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                index === validCurrentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
               }`}
             >
               {slide.type === 'slide' ? (
                 <MarkdownSlide
                   title={slide.title}
                   content={slide.content}
-                  isActive={index === currentSlide}
+                  isActive={index === validCurrentSlide}
                   layout={slide.layout || 'center'}
                   referenceLink={slide.referenceLink}
                 />
               ) : (
                 <LinkPreview
                   url={slide.url}
-                  isActive={index === currentSlide}
+                  isActive={index === validCurrentSlide}
                 />
               )}
             </div>
@@ -292,7 +319,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       <div className="bg-gray-100 p-4 flex justify-between items-center">
         <Button 
           onClick={handlePrevSlide} 
-          disabled={currentSlide === 0}
+          disabled={validCurrentSlide === 0}
           variant="outline"
           className="px-4 py-2 min-w-[120px]"
         >
@@ -303,9 +330,9 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
+              onClick={() => goTo(index)}
               className={`w-4 h-4 rounded-full transition-colors cursor-pointer ${
-                index === currentSlide ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
+                index === validCurrentSlide ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
               }`}
               title={`スライド ${index + 1} に移動`}
             />
@@ -314,7 +341,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
         
         <Button 
           onClick={handleNextSlide} 
-          disabled={currentSlide === slides.length - 1}
+          disabled={validCurrentSlide === slides.length - 1}
           variant="outline"
           className="px-4 py-2 min-w-[120px]"
         >

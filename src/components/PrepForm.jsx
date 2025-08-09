@@ -12,7 +12,13 @@ const PrepDataSchema = z.object({
   reason: z.string().default(''),
   example: z.string().default(''),
   summary: z.string().default(''),
-  referenceLink: z.string().url().or(z.string().length(0)).default('')
+  referenceLink: z.string().url().or(z.string().length(0)).default(''),
+  durations: z.object({
+    point: z.number().min(3).max(90).default(15),
+    reason: z.number().min(3).max(90).default(15),
+    example: z.number().min(3).max(90).default(15),
+    summary: z.number().min(3).max(90).default(15)
+  }).default({})
 })
 
 const ExportDataSchema = z.object({
@@ -289,6 +295,74 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
         <p className="text-xs text-gray-500">
           埋め込み可能なサイトのURLを入力すると、スライドショー中にプレビューが表示されます
         </p>
+      </div>
+
+      {/* スライド秒数設定 */}
+      <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+        <label className="text-sm font-medium text-gray-700">
+          スライド表示時間設定（秒）
+        </label>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="text-xs text-gray-600">Point</label>
+            <Input
+              type="number"
+              min="3"
+              max="90"
+              value={prepData.durations?.point || 15}
+              onChange={(e) => handleInputChange('durations', {
+                ...prepData.durations,
+                point: parseInt(e.target.value) || 15
+              })}
+              className="text-center"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Reason</label>
+            <Input
+              type="number"
+              min="3"
+              max="90"
+              value={prepData.durations?.reason || 15}
+              onChange={(e) => handleInputChange('durations', {
+                ...prepData.durations,
+                reason: parseInt(e.target.value) || 15
+              })}
+              className="text-center"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Example</label>
+            <Input
+              type="number"
+              min="3"
+              max="90"
+              value={prepData.durations?.example || 15}
+              onChange={(e) => handleInputChange('durations', {
+                ...prepData.durations,
+                example: parseInt(e.target.value) || 15
+              })}
+              className="text-center"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Summary</label>
+            <Input
+              type="number"
+              min="3"
+              max="90"
+              value={prepData.durations?.summary || 15}
+              onChange={(e) => handleInputChange('durations', {
+                ...prepData.durations,
+                summary: parseInt(e.target.value) || 15
+              })}
+              className="text-center"
+            />
+          </div>
+        </div>
+        <div className="text-xs text-gray-500 text-center">
+          合計時間: {Object.values(prepData.durations || {point: 15, reason: 15, example: 15, summary: 15}).reduce((a, b) => a + b, 0)}秒
+        </div>
       </div>
 
       {/* メインアクション */}

@@ -14,7 +14,13 @@ function App() {
     example: '',
     summary: '',
     referenceLink: '',
-    deckId: '' // クラウド保存用のdeckId追加
+    deckId: '', // クラウド保存用のdeckId追加
+    durations: {
+      point: 15,
+      reason: 15,
+      example: 15,
+      summary: 15
+    }
   })
 
   const handleStartSlideshow = () => {
