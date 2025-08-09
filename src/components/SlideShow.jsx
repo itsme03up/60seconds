@@ -214,63 +214,77 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       </div>
 
       {/* 詳細プログレスバー - セクション分け */}
-      <div className="bg-gray-100 px-4 py-2">
+      <div className="bg-gray-100 px-4 py-2 pb-4">
         <div className="flex justify-between items-center mb-2">
           <div className="text-sm font-medium text-gray-700">
             {validCurrentSlide + 1}/{slides.length} {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
           </div>
           <div className="text-sm text-gray-600">
-            残り {Math.floor(timeRemaining)}秒
+            残り {Math.floor(timeRemaining)}秒 / 合計 {total}秒
           </div>
         </div>
         
-        <div className="w-full bg-gray-200 h-3 relative rounded-full overflow-hidden">
-          {/* 各スライドの区切り線 */}
-          {slides.map((slide, index) => (
-            <div key={index}>
-              {/* セクション境界線 */}
-              {index > 0 && (
-                <div
-                  className="absolute top-0 bottom-0 border-l-2 border-gray-400 z-10"
-                  style={{ left: `${(index / slides.length) * 100}%` }}
-                />
-              )}
-              
-              {/* セクションラベル */}
+        {/* プログレスバーコンテナ（上部にラベル用余白を確保） */}
+        <div className="pt-8">
+          <div className="w-full bg-gray-200 h-4 relative rounded-full overflow-hidden shadow-inner">
+          {/* 各セクションの背景（色分け） */}
+          {durations.map((duration, index) => {
+            const sectionStart = (edges[index - 1] || 0) / total * 100
+            const sectionWidth = duration / total * 100
+            const colors = [
+                'ring-sky-400',
+                'ring-teal-400',
+                'ring-amber-400',
+                'ring-indigo-400'
+            ]
+            
+            return (
               <div
-                className="absolute -top-6 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap font-medium"
-                style={{ left: `${((index + 0.5) / slides.length) * 100}%` }}
-              >
-                {slide.title.split('（')[0]}
+                key={`section-${index}`}
+                className={`absolute top-0 bottom-0 ${colors[index]} transition-all duration-300`}
+                style={{ 
+                  left: `${sectionStart}%`,
+                  width: `${sectionWidth}%`
+                }}
+              />
+            )
+          })}
+
+          {/* 各スライドの区切り線と秒数表示 */}
+          {slides.map((slide, index) => {
+            const sectionStart = (edges[index - 1] || 0) / total * 100
+            const sectionCenter = sectionStart + (durations[index] / total * 100) / 2
+            
+            return (
+              <div key={`divider-${index}`}>
+                {/* セクション境界線 */}
+                {index > 0 && (
+                  <div
+                    className="absolute top-0 bottom-0 border-l-2 border-gray-500 z-10"
+                    style={{ left: `${sectionStart}%` }}
+                  />
+                )}
+                
+                {/* セクションラベルと秒数 */}
+                <div
+                  className="absolute -top-8 transform -translate-x-1/2 text-xs text-gray-700 whitespace-nowrap font-medium text-center"
+                  style={{ left: `${sectionCenter}%` }}
+                >
+                  <div>{slide.title.split('（')[0]}</div>
+                  <div className="text-gray-500">{durations[index]}秒</div>
+                </div>
               </div>
-            </div>
-          ))}
-          
-          {/* 全体の進行バー */}
-          <div 
-            className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-1000 ease-linear relative"
-            style={{ width: `${progress}%` }}
-          >
-            <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-800 shadow-lg"></div>
-          </div>
+            )
+          })}
           
           {/* 現在のスライド範囲ハイライト */}
           <div
-            className="absolute top-0 bottom-0 bg-red-500 bg-opacity-20 transition-all duration-300"
+            className="absolute top-0 bottom-0 bg-red-500 bg-opacity-30 transition-all duration-300 border-l-2 border-r-2 border-red-600"
             style={{ 
-              left: `${(validCurrentSlide / slides.length) * 100}%`,
-              width: `${100 / slides.length}%`
+              left: `${((edges[validCurrentSlide - 1] || 0) / total) * 100}%`,
+              width: `${(durations[validCurrentSlide] / total) * 100}%`
             }}
           />
-          
-          {/* 現在のスライド位置マーカー */}
-          <div
-            className="absolute top-0 bottom-0 w-1 bg-red-500 transition-all duration-300 z-20"
-            style={{ left: `${(validCurrentSlide / slides.length) * 100}%` }}
-          >
-            <div className="absolute -top-5 left-0 transform -translate-x-1/2 text-xs font-bold text-red-600">
-              ▼
-            </div>
           </div>
         </div>
       </div>
