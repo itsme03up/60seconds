@@ -1,25 +1,50 @@
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-
 import { cn } from "@/lib/utils"
 
-const TooltipProvider = TooltipPrimitive.Provider
+const TooltipProvider = ({ children, ...props }) => children
 
-const Tooltip = TooltipPrimitive.Root
+const Tooltip = ({ children, ...props }) => {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <div className="relative inline-block">
+      {React.Children.map(children, (child) => {
+        if (child.type === TooltipTrigger) {
+          return React.cloneElement(child, { 
+            onMouseEnter: () => setOpen(true),
+            onMouseLeave: () => setOpen(false)
+          })
+        }
+        if (child.type === TooltipContent) {
+          return open ? child : null
+        }
+        return child
+      })}
+    </div>
+  )
+}
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipTrigger = React.forwardRef(({ className, onMouseEnter, onMouseLeave, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={className}
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+    {...props}
+  />
+))
 
 const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Content
+  <div
     ref={ref}
-    sideOffset={sideOffset}
     className={cn(
-      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "absolute z-50 overflow-hidden rounded-md border bg-white px-3 py-1.5 text-sm text-gray-900 shadow-md -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap",
       className
     )}
     {...props}
   />
 ))
-TooltipContent.displayName = TooltipPrimitive.Content.displayName
+
+TooltipTrigger.displayName = "TooltipTrigger"
+TooltipContent.displayName = "TooltipContent"
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }

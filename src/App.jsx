@@ -83,7 +83,7 @@ function App() {
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
                 <Play className="mr-2 h-4 w-4" /> スライドショー開始
               </Button>
-              <a href="https://github.com/annayanchuk/60seconds" target="_blank" rel="noreferrer">
+              <a href="https://github.com/itsme03up/60seconds" target="_blank" rel="noreferrer">
                 <Button variant="ghost" size="icon" aria-label="GitHub">
                   <Github className="h-5 w-5" />
                 </Button>
