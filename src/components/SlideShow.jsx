@@ -59,11 +59,15 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           break
         case 'ArrowLeft':
           event.preventDefault()
-          setCurrentSlide(prev => Math.max(0, prev - 1))
+          const prevSlide = Math.max(0, currentSlide - 1);
+          setCurrentSlide(prevSlide);
+          console.log('Keyboard previous slide:', prevSlide);
           break
         case 'ArrowRight':
           event.preventDefault()
-          setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
+          const nextSlide = Math.min(slides.length - 1, currentSlide + 1);
+          setCurrentSlide(nextSlide);
+          console.log('Keyboard next slide:', nextSlide);
           break
         case 'r':
         case 'R':
@@ -94,11 +98,15 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   }, [onBackToEdit, slides.length, setSec])
 
   const handlePrevSlide = () => {
-    setCurrentSlide(prev => Math.max(0, prev - 1))
+    const newSlide = Math.max(0, currentSlide - 1);
+    setCurrentSlide(newSlide);
+    console.log('Previous slide:', newSlide);
   }
 
   const handleNextSlide = () => {
-    setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
+    const newSlide = Math.min(slides.length - 1, currentSlide + 1);
+    setCurrentSlide(newSlide);
+    console.log('Next slide:', newSlide);
   }
 
   const handleTogglePlay = () => {
@@ -131,6 +139,10 @@ export default function SlideShow({ prepData, onBackToEdit }) {
             </span>
             <span className="text-sm text-gray-300">
               {slides[currentSlide] ? slides[currentSlide].title.split('（')[0] : ''}
+            </span>
+            {/* デバッグ情報 */}
+            <span className="text-xs text-yellow-300">
+              Current: {currentSlide} | Playing: {isPlaying ? 'YES' : 'NO'}
             </span>
           </div>
         </div>
@@ -274,6 +286,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           onClick={handlePrevSlide} 
           disabled={currentSlide === 0}
           variant="outline"
+          className="px-4 py-2 min-w-[120px]"
         >
           ← 前のスライド
         </Button>
@@ -282,10 +295,14 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentSlide ? 'bg-blue-600' : 'bg-gray-300'
+              onClick={() => {
+                setCurrentSlide(index);
+                console.log('Direct slide navigation:', index);
+              }}
+              className={`w-4 h-4 rounded-full transition-colors cursor-pointer ${
+                index === currentSlide ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
               }`}
+              title={`スライド ${index + 1} に移動`}
             />
           ))}
         </div>
@@ -294,6 +311,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           onClick={handleNextSlide} 
           disabled={currentSlide === slides.length - 1}
           variant="outline"
+          className="px-4 py-2 min-w-[120px]"
         >
           次のスライド →
         </Button>
