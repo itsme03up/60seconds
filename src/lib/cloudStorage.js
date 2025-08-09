@@ -28,15 +28,13 @@ function isAmplifyConfigured() {
  * }
  */
 
-const BUCKET = "slidesStorage";
-
 export async function saveDeck(deckId, deckJson) {
   try {
     const base = `decks/${deckId}`;
     await uploadData({
       path: `${base}/deck.json`,
       data: JSON.stringify(deckJson),
-      options: { contentType: "application/json", bucket: BUCKET }
+      options: { contentType: "application/json" }
     }).result;
     return deckId;
   } catch (error) {
@@ -50,8 +48,7 @@ export async function saveDeck(deckId, deckJson) {
 export async function loadDeck(deckId) {
   try {
     const res = await downloadData({
-      path: `decks/${deckId}/deck.json`,
-      options: { bucket: BUCKET }
+      path: `decks/${deckId}/deck.json`
     }).result;
     const text = await res.body.text();
     return JSON.parse(text);
@@ -66,7 +63,7 @@ export async function loadDeck(deckId) {
 /** deck 一覧: deck.json のあるフォルダを抽出 */
 export async function listDecks() {
   try {
-    const { items } = await list({ path: "decks/", options: { bucket: BUCKET } });
+    const { items } = await list({ path: "decks/" });
     return items
       .filter(it => it.path.endsWith("/deck.json"))
       .map(it => {
@@ -85,7 +82,7 @@ export async function listDecks() {
 export async function deleteDeck(deckId) {
   try {
     // 必要最低限：manifestだけ削除（完全削除するなら list→remove で配下を全削除）
-    await remove({ path: `decks/${deckId}/deck.json`, options: { bucket: BUCKET } });
+    await remove({ path: `decks/${deckId}/deck.json` });
   } catch (error) {
     if (error.message?.includes('Auth') || error.message?.includes('amplify')) {
       throw new Error('Amplifyが設定されていません。まずAmplifyバックエンドをデプロイしてください。');

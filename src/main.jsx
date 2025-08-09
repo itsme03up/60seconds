@@ -13,6 +13,10 @@ import { Amplify } from 'aws-amplify'
       const cfg = await res.json()
       Amplify.configure(cfg)
       console.log('✅ Amplify configured (Storage enabled)')
+      console.log('AMPLIFY OUTPUTS - Storage:', cfg.storage) // デバッグ用
+      if (!cfg.storage) {
+        console.warn('⚠️ Storage configuration not found in amplify_outputs.json')
+      }
     } else {
       console.log('ℹ️ Amplify outputs not found. Cloud features will be disabled until backend is generated.')
     }
