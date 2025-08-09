@@ -25,6 +25,7 @@ function App() {
       return
     }
     
+    console.log('Starting slideshow with data:', prepData);
     setMode('slideshow')
   }
 

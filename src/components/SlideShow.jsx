@@ -9,6 +9,22 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   const [isPlaying, setIsPlaying] = useState(true)
   const { timeElapsed, timeRemaining, progress, isCompleted, setSec } = useTimer(60, isPlaying)
 
+  // デバッグログ用のuseEffect
+  useEffect(() => {
+    console.log('SlideShow Debug:', {
+      currentSlide,
+      totalSlides: slides.length,
+      isPlaying,
+      timeElapsed: Math.floor(timeElapsed),
+      prepData: {
+        point: prepData.point?.length || 0,
+        reason: prepData.reason?.length || 0,
+        example: prepData.example?.length || 0,
+        summary: prepData.summary?.length || 0
+      }
+    });
+  }, [currentSlide, isPlaying, timeElapsed]);
+
   // スライドデータの準備
   const slides = [
     { type: 'slide', title: 'Point（要点・結論）', content: prepData.point },
@@ -59,15 +75,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           break
         case 'ArrowLeft':
           event.preventDefault()
-          const prevSlide = Math.max(0, currentSlide - 1);
-          setCurrentSlide(prevSlide);
-          console.log('Keyboard previous slide:', prevSlide);
+          setCurrentSlide(prev => Math.max(0, prev - 1));
           break
         case 'ArrowRight':
           event.preventDefault()
-          const nextSlide = Math.min(slides.length - 1, currentSlide + 1);
-          setCurrentSlide(nextSlide);
-          console.log('Keyboard next slide:', nextSlide);
+          setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1));
           break
         case 'r':
         case 'R':
@@ -98,15 +110,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   }, [onBackToEdit, slides.length, setSec])
 
   const handlePrevSlide = () => {
-    const newSlide = Math.max(0, currentSlide - 1);
-    setCurrentSlide(newSlide);
-    console.log('Previous slide:', newSlide);
+    setCurrentSlide(prev => Math.max(0, prev - 1));
   }
 
   const handleNextSlide = () => {
-    const newSlide = Math.min(slides.length - 1, currentSlide + 1);
-    setCurrentSlide(newSlide);
-    console.log('Next slide:', newSlide);
+    setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1));
   }
 
   const handleTogglePlay = () => {
@@ -295,10 +303,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                setCurrentSlide(index);
-                console.log('Direct slide navigation:', index);
-              }}
+              onClick={() => setCurrentSlide(index)}
               className={`w-4 h-4 rounded-full transition-colors cursor-pointer ${
                 index === currentSlide ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
               }`}
