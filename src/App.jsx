@@ -7,7 +7,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import PrepForm from './components/PrepForm'
 import SlideShow from './components/SlideShow'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -62,7 +61,6 @@ function App() {
   }
 
   return (
-    <TooltipProvider>
       <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-white">
         {/* Top Nav */}
         <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-gray-900/90 bg-gray-900 border-b border-gray-800">
@@ -72,16 +70,9 @@ function App() {
               <span className="font-semibold text-white">60seconds</span>
             </div>
             <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white">
-                    <Save className="mr-2 h-4 w-4" /> クラウド保存
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  データをクラウドに保存します
-                </TooltipContent>
-              </Tooltip>
+              <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white">
+                <Save className="mr-2 h-4 w-4" /> クラウド保存
+              </Button>
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
                 <Play className="mr-2 h-4 w-4" /> スライドショー開始
               </Button>
@@ -277,7 +268,6 @@ function App() {
           © {new Date().getFullYear()} 60seconds — PREP 1分スピーチ支援
         </footer>
       </div>
-    </TooltipProvider>
   )
 }
 
