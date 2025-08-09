@@ -173,7 +173,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
             <Button 
               variant="outline" 
               onClick={onBackToEdit} 
-              className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+              className="border-gray-500 bg-gray-800 text-white hover:bg-gray-700 hover:border-gray-400"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               編集へ戻る
@@ -225,7 +225,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
                   onClick={handleTogglePlay} 
                   variant="outline" 
                   size="sm"
-                  className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+                  className="border-gray-500 bg-gray-800 text-white hover:bg-gray-700 hover:border-gray-400"
                 >
                   <Pause className="mr-2 h-4 w-4" />
                   一時停止
@@ -235,7 +235,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
                 onClick={handleReset} 
                 variant="outline" 
                 size="sm"
-                className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+                className="border-gray-500 bg-gray-800 text-white hover:bg-gray-700 hover:border-gray-400"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 リセット
