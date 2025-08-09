@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import PrepForm from './components/PrepForm'
 import SlideShow from './components/SlideShow'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -73,17 +73,19 @@ function App() {
             </div>
             <div className="flex items-center gap-2">
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white">
                     <Save className="mr-2 h-4 w-4" /> クラウド保存
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Amplify Storage に保存</TooltipContent>
+                <TooltipContent>
+                  データをクラウドに保存します
+                </TooltipContent>
               </Tooltip>
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
                 <Play className="mr-2 h-4 w-4" /> スライドショー開始
               </Button>
-              <a href="https://github.com/itsme03up/60seconds" target="_blank" rel="noreferrer">
+              <a href="https://github.com/annayanchuk/60seconds" target="_blank" rel="noreferrer">
                 <Button variant="ghost" size="icon" aria-label="GitHub" className="text-gray-300 hover:text-white hover:bg-gray-800">
                   <Github className="h-5 w-5" />
                 </Button>
@@ -96,15 +98,7 @@ function App() {
           {/* Hero */}
           <section className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">1分 PREP スライドジェネレータ</h1>
-            <p className="text-slate-600 mt-2">PREP法で素早く構成、リンクを小窓でプレビュー。タイマーは1分可変（各セクション秒数）でした。</p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
-                <Play className="mr-2 h-4 w-4" /> 今すぐ試す
-              </Button>
-              <Button variant="outline">
-                <Save className="mr-2 h-4 w-4" /> クラウド保存
-              </Button>
-            </div>
+            <p className="text-slate-600 mt-2">PREP法で素早く構成、リンクを小窓でプレビュー。タイマーは1分可変（各セクション秒数）です。</p>
           </section>
 
           {/* 2ペイン */}
