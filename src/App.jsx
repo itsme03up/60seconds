@@ -65,16 +65,16 @@ function App() {
     <TooltipProvider>
       <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-white">
         {/* Top Nav */}
-        <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/80 border-b">
+        <header className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-gray-900/90 bg-gray-900 border-b border-gray-800">
           <div className="mx-auto max-w-6xl px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="rounded-full px-3">BETA</Badge>
-              <span className="font-semibold">60seconds</span>
+              <Badge variant="secondary" className="rounded-full px-3 bg-gray-700 text-gray-200 border-gray-600">BETA</Badge>
+              <span className="font-semibold text-white">60seconds</span>
             </div>
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white">
                     <Save className="mr-2 h-4 w-4" /> クラウド保存
                   </Button>
                 </TooltipTrigger>
@@ -83,8 +83,8 @@ function App() {
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
                 <Play className="mr-2 h-4 w-4" /> スライドショー開始
               </Button>
-              <a href="https://github.com/itsme03up/60seconds" target="_blank" rel="noreferrer">
-                <Button variant="ghost" size="icon" aria-label="GitHub">
+              <a href="https://github.com/annayanchuk/60seconds" target="_blank" rel="noreferrer">
+                <Button variant="ghost" size="icon" aria-label="GitHub" className="text-gray-300 hover:text-white hover:bg-gray-800">
                   <Github className="h-5 w-5" />
                 </Button>
               </a>

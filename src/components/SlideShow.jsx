@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { ArrowLeft, Play, Pause, RotateCcw, Home, ChevronLast } from 'lucide-react'
 import { Button } from './ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card'
+import { Badge } from './ui/badge'
+import { Separator } from './ui/separator'
 import MarkdownSlide from './MarkdownSlide'
 import LinkPreview from './LinkPreview'
 
@@ -161,139 +165,174 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white">
-      {/* ヘッダー - タイマーとコントロール */}
-      <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={onBackToEdit} className="text-gray-900">
-            ← 編集へ戻る
-          </Button>
-          <div className="flex flex-col">
-            <span className="text-lg font-mono">
-              {slides.length > 0 ? `${validCurrentSlide + 1} / ${slides.length}` : '0 / 0'}
-            </span>
-            <span className="text-sm text-gray-300">
-              {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
-            </span>
-            {/* デバッグ情報 */}
-            <span className="text-xs text-yellow-300">
-              Current: {validCurrentSlide} | Playing: {isPlaying ? 'YES' : 'NO'} | t: {t.toFixed(1)} | Total: {total}s
-            </span>
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* ヘッダー - shadcn/ui スタイル */}
+      <header className="bg-gray-900 text-white border-b border-gray-800">
+        <div className="p-4 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={onBackToEdit} 
+              className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              編集へ戻る
+            </Button>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-gray-700 text-gray-200 border-gray-600">
+                  {slides.length > 0 ? `${validCurrentSlide + 1} / ${slides.length}` : '0 / 0'}
+                </Badge>
+                <span className="text-sm text-gray-300 font-medium">
+                  {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
+                </span>
+              </div>
+              {/* デバッグ情報 */}
+              <span className="text-xs text-yellow-300 mt-1">
+                Playing: {isPlaying ? 'YES' : 'NO'} | t: {t.toFixed(1)} | Total: {total}s
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <div 
+                className="text-2xl font-mono font-bold"
+                aria-live="polite"
+                aria-label={`経過時間 ${formatTime(Math.floor(timeElapsed))}秒`}
+              >
+                {formatTime(Math.floor(timeElapsed))}
+              </div>
+              <div className="text-sm text-gray-400">
+                残り: {formatTime(Math.floor(timeRemaining))}
+              </div>
+            </div>
+            
+            <Separator orientation="vertical" className="h-8 bg-gray-700" />
+            
+            <div className="flex space-x-2">
+              {!isPlaying ? (
+                <Button 
+                  onClick={handleTogglePlay} 
+                  size="sm" 
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  開始
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleTogglePlay} 
+                  variant="outline" 
+                  size="sm"
+                  className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+                >
+                  <Pause className="mr-2 h-4 w-4" />
+                  一時停止
+                </Button>
+              )}
+              <Button 
+                onClick={handleReset} 
+                variant="outline" 
+                size="sm"
+                className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                リセット
+              </Button>
+            </div>
           </div>
         </div>
+      </header>
 
-        <div className="flex items-center space-x-4">
-          <div className="text-right">
-            <div 
-              className="text-2xl font-mono font-bold"
-              aria-live="polite"
-              aria-label={`経過時間 ${formatTime(Math.floor(timeElapsed))}秒`}
-            >
-              {formatTime(Math.floor(timeElapsed))}
+      {/* プログレスバー - Card形式 */}
+      <Card className="mx-4 mt-4 mb-2 rounded-xl shadow-sm border-slate-200">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-slate-700">
+                {validCurrentSlide + 1}/{slides.length}
+              </Badge>
+              <span className="text-sm font-medium text-slate-700">
+                {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
+              </span>
             </div>
-            <div className="text-sm text-gray-300">
-              残り: {formatTime(Math.floor(timeRemaining))}
+            <div className="text-sm text-slate-600 font-mono">
+              残り {Math.floor(timeRemaining)}秒 / 合計 {total}秒
             </div>
           </div>
           
-          <div className="flex space-x-2">
-            {!isPlaying ? (
-              <Button onClick={handleTogglePlay} variant="outline" className="text-gray-900">
-                ▶ 開始
-              </Button>
-            ) : (
-              <Button onClick={handleTogglePlay} variant="outline" className="text-gray-900">
-                ⏸ 一時停止
-              </Button>
-            )}
-            <Button onClick={handleReset} variant="outline" className="text-gray-900">
-              ⏹ リセット
-            </Button>
-          </div>
-        </div>
-      </div>
+          {/* プログレスバーコンテナ（上部にラベル用余白を確保） */}
+          <div className="pt-8">
+            <div className="w-full bg-gray-200 h-4 relative rounded-full overflow-hidden shadow-inner">
+              {/* 各セクションの背景（色分け） */}
+              {durations.map((duration, index) => {
+                const sectionStart = (edges[index - 1] || 0) / total * 100
+                const sectionWidth = duration / total * 100
+                const colors = [
+                    'bg-sky-100',
+                    'bg-teal-100',
+                    'bg-amber-100',
+                    'bg-indigo-100'
+                ]
+                const accents = [
+                    'ring-sky-400',
+                    'ring-teal-400',
+                    'ring-amber-400',
+                    'ring-indigo-400'
+                ]
+                
+                return (
+                  <div
+                    key={`section-${index}`}
+                    className={`absolute top-0 bottom-0 ${colors[index]} ${accents[index]} ring-1 text-slate-800 transition-all duration-300`}
+                    style={{ 
+                      left: `${sectionStart}%`,
+                      width: `${sectionWidth}%`
+                    }}
+                  />
+                )
+              })}
 
-      {/* 詳細プログレスバー - セクション分け */}
-      <div className="bg-gray-100 px-4 py-2 pb-4">
-        <div className="flex justify-between items-center mb-2">
-          <div className="text-sm font-medium text-gray-700">
-            {validCurrentSlide + 1}/{slides.length} {slides[validCurrentSlide] ? slides[validCurrentSlide].title.split('（')[0] : ''}
-          </div>
-          <div className="text-sm text-gray-600">
-            残り {Math.floor(timeRemaining)}秒 / 合計 {total}秒
-          </div>
-        </div>
-        
-        {/* プログレスバーコンテナ（上部にラベル用余白を確保） */}
-        <div className="pt-8">
-          <div className="w-full bg-gray-200 h-4 relative rounded-full overflow-hidden shadow-inner">
-          {/* 各セクションの背景（色分け） */}
-          {durations.map((duration, index) => {
-            const sectionStart = (edges[index - 1] || 0) / total * 100
-            const sectionWidth = duration / total * 100
-            const colors = [
-                'bg-sky-100',
-                'bg-teal-100',
-                'bg-amber-100',
-                'bg-indigo-100'
-            ]
-            const accents = [
-                'ring-sky-400',
-                'ring-teal-400',
-                'ring-amber-400',
-                'ring-indigo-400'
-            ]
-            
-            return (
+              {/* 各スライドの区切り線と秒数表示 */}
+              {slides.map((slide, index) => {
+                const sectionStart = (edges[index - 1] || 0) / total * 100
+                const sectionCenter = sectionStart + (durations[index] / total * 100) / 2
+                
+                return (
+                  <div key={`divider-${index}`}>
+                    {/* セクション境界線 */}
+                    {index > 0 && (
+                      <div
+                        className="absolute top-0 bottom-0 border-l-2 border-gray-500 z-10"
+                        style={{ left: `${sectionStart}%` }}
+                      />
+                    )}
+                    
+                    {/* セクションラベルと秒数 */}
+                    <div
+                      className="absolute -top-8 transform -translate-x-1/2 text-xs text-gray-700 whitespace-nowrap font-medium text-center"
+                      style={{ left: `${sectionCenter}%` }}
+                    >
+                      <div>{slide.title.split('（')[0]}</div>
+                      <div className="text-gray-500">{durations[index]}秒</div>
+                    </div>
+                  </div>
+                )
+              })}
+              
+              {/* 現在のスライド範囲ハイライト */}
               <div
-                key={`section-${index}`}
-                className={`absolute top-0 bottom-0 ${colors[index]} ${accents[index]} ring-1 text-slate-800 transition-all duration-300`}
+                className="absolute top-0 bottom-0 bg-red-500 bg-opacity-30 transition-all duration-300 border-l-2 border-r-2 border-red-600"
                 style={{ 
-                  left: `${sectionStart}%`,
-                  width: `${sectionWidth}%`
+                  left: `${((edges[validCurrentSlide - 1] || 0) / total) * 100}%`,
+                  width: `${(durations[validCurrentSlide] / total) * 100}%`
                 }}
               />
-            )
-          })}
-
-          {/* 各スライドの区切り線と秒数表示 */}
-          {slides.map((slide, index) => {
-            const sectionStart = (edges[index - 1] || 0) / total * 100
-            const sectionCenter = sectionStart + (durations[index] / total * 100) / 2
-            
-            return (
-              <div key={`divider-${index}`}>
-                {/* セクション境界線 */}
-                {index > 0 && (
-                  <div
-                    className="absolute top-0 bottom-0 border-l-2 border-gray-500 z-10"
-                    style={{ left: `${sectionStart}%` }}
-                  />
-                )}
-                
-                {/* セクションラベルと秒数 */}
-                <div
-                  className="absolute -top-8 transform -translate-x-1/2 text-xs text-gray-700 whitespace-nowrap font-medium text-center"
-                  style={{ left: `${sectionCenter}%` }}
-                >
-                  <div>{slide.title.split('（')[0]}</div>
-                  <div className="text-gray-500">{durations[index]}秒</div>
-                </div>
-              </div>
-            )
-          })}
-          
-          {/* 現在のスライド範囲ハイライト */}
-          <div
-            className="absolute top-0 bottom-0 bg-red-500 bg-opacity-30 transition-all duration-300 border-l-2 border-r-2 border-red-600"
-            style={{ 
-              left: `${((edges[validCurrentSlide - 1] || 0) / total) * 100}%`,
-              width: `${(durations[validCurrentSlide] / total) * 100}%`
-            }}
-          />
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* メインスライドエリア */}
       <div 
@@ -336,38 +375,44 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       </div>
 
       {/* フッター - ナビゲーション */}
-      <div className="bg-gray-100 p-4 flex justify-between items-center">
-        <Button 
-          onClick={handlePrevSlide} 
-          disabled={validCurrentSlide === 0}
-          variant="outline"
-          className="px-4 py-2 min-w-[120px]"
-        >
-          ← 前のスライド
-        </Button>
-        
-        <div className="flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goTo(index)}
-              className={`w-4 h-4 rounded-full transition-colors cursor-pointer ${
-                index === validCurrentSlide ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              title={`スライド ${index + 1} に移動`}
-            />
-          ))}
-        </div>
-        
-        <Button 
-          onClick={handleNextSlide} 
-          disabled={validCurrentSlide === slides.length - 1}
-          variant="outline"
-          className="px-4 py-2 min-w-[120px]"
-        >
-          次のスライド →
-        </Button>
-      </div>
+      <Card className="mx-4 mb-4 rounded-xl shadow-sm border-slate-200">
+        <CardContent className="p-4 flex justify-between items-center">
+          <Button 
+            onClick={handlePrevSlide} 
+            disabled={validCurrentSlide === 0}
+            variant="outline"
+            className="px-4 py-2 min-w-[120px] disabled:opacity-50"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            前のスライド
+          </Button>
+          
+          <div className="flex space-x-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goTo(index)}
+                className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
+                  index === validCurrentSlide 
+                    ? 'bg-emerald-600 ring-2 ring-emerald-200' 
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                title={`スライド ${index + 1} に移動`}
+              />
+            ))}
+          </div>
+          
+          <Button 
+            onClick={handleNextSlide} 
+            disabled={validCurrentSlide === slides.length - 1}
+            variant="outline"
+            className="px-4 py-2 min-w-[120px] disabled:opacity-50"
+          >
+            次のスライド
+            <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
