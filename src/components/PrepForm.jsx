@@ -7,7 +7,7 @@ import { useDebounce } from '../hooks/useDebounce'
 export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
   // 自動保存（1秒デバウンス）
   const debouncedSave = useDebounce((data) => {
-    console.log('自動保存されました')
+    // 自動保存処理（ローカルストレージは useLocalStorage で自動管理）
   }, 1000)
 
   useEffect(() => {

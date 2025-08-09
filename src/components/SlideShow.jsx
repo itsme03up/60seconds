@@ -62,11 +62,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           break
         case 'ArrowLeft':
           event.preventDefault()
-          handlePrevSlide()
+          setCurrentSlide(prev => Math.max(0, prev - 1))
           break
         case 'ArrowRight':
           event.preventDefault()
-          handleNextSlide()
+          setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
           break
         case 'Escape':
           event.preventDefault()
@@ -87,15 +87,13 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [isRunning, currentSlide, slides.length, start, pause, onBackToEdit])
+  }, [isRunning, start, pause, onBackToEdit, slides.length])
 
   const handlePrevSlide = () => {
-    console.log('Previous button clicked, current slide:', currentSlide)
     setCurrentSlide(prev => Math.max(0, prev - 1))
   }
 
   const handleNextSlide = () => {
-    console.log('Next button clicked, current slide:', currentSlide)
     setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
   }
 
