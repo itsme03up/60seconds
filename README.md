@@ -1,6 +1,31 @@
 # 🎯 60秒 PREP スライドジェネレータ
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-y## 🔒 既知の制限事項
+
+### iframe埋め込み制限
+- **X-Frame-Options**: サイト側が埋め込みを禁止している場合は表示できません
+- **CSP (Content Security Policy)**: セキュリティ設定により表示がブロックされる場合があります
+- **HTTPS必須**: HTTPSサイトからHTTPサイトは埋め込めません
+
+### タイマー精度
+- **バックグラウンドタブ**: 長時間非アクティブになると僅かなドリフトが生じる可能性があります
+- **システム負荷**: 高負荷時にミリ秒レベルの誤差が発生する場合があります
+- **ブラウザスロットリング**: モバイルブラウザでの省電力モード時に影響を受けます
+
+### モバイル対応
+- **画面回転推奨**: スライドショーは横向き表示での使用を推奨します
+- **キーボードショートカット**: タッチ操作では一部機能が制限されます
+- **フルスクリーン**: ブラウザのアドレスバー表示により画面領域が制限されます
+
+### ブラウザ対応
+- **モダンブラウザ必須**: ES2020+、CSS Grid、Flexboxに対応したブラウザが必要です
+- **Internet Explorer**: 非対応です
+- **古いモバイルブラウザ**: iOS 12未満、Android 8未満では動作しない可能性があります
+
+### データ制限
+- **ローカルストレージ**: ブラウザの容量制限（通常5-10MB）に依存します
+- **JSON形式**: エクスポート/インポートは指定形式のJSONファイルのみ対応
+- **文字数制限**: 極端に長いテキストではレイアウトが崩れる可能性があります.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.0+-orange.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4.0-green.svg)](https://tailwindcss.com/)
@@ -74,6 +99,7 @@ src/
 │   ├── MarkdownSlide.jsx    # Markdown→HTML + アニメーション
 │   ├── LinkPreview.jsx      # iframe プレビュー + フォールバック
 │   ├── SlideShow.jsx        # タイマー制御 + スライド切替
+│   ├── ErrorBoundary.jsx    # エラーハンドリング
 │   └── ui/                  # shadcn/ui コンポーネント
 ├── hooks/
 │   ├── useLocalStorage.js   # localStorage 同期
@@ -82,6 +108,28 @@ src/
 └── lib/
     └── utils.js             # ユーティリティ関数
 ```
+
+## 📄 データフォーマット
+
+### エクスポート/インポート JSON形式
+
+```json
+{
+  "version": "1.0.0",
+  "createdAt": "2025-01-09T12:00:00.000Z",
+  "appName": "60秒PREPスライド",
+  "prepData": {
+    "point": "結論・要点をここに入力",
+    "reason": "理由・根拠をここに入力", 
+    "example": "具体例・事例をここに入力",
+    "summary": "まとめをここに入力",
+    "referenceLink": "https://example.com"
+  }
+}
+```
+
+**必須フィールド**: `prepData`オブジェクト内の各項目  
+**オプション**: `referenceLink`は空文字列または有効なURLを指定
 
 ## � 既知の制限事項
 

@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react'
 
 export default function LinkPreview({ url, isActive }) {
-  const [loaded, setLoaded] = useState(false)
-  const [hasError, setHasError] = useState(false)
+  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'loaded' | 'blocked' | 'error'
 
-  // 2.5秒後に埋め込みブロック判定
+  // URL変更時に状態をリセット
   useEffect(() => {
-    if (url && !loaded) {
-      const id = setTimeout(() => {
-        if (!loaded) {
-          setLoaded('blocked')
-        }
-      }, 2500)
-      return () => clearTimeout(id)
+    if (!url) {
+      setStatus('idle')
+      return
     }
-  }, [loaded, url])
+    
+    setStatus('loading')
+    
+    // 2.5秒後に埋め込みブロック判定
+    const timeoutId = setTimeout(() => {
+      if (status === 'loading') {
+        setStatus('blocked')
+      }
+    }, 2500)
+    
+    return () => clearTimeout(timeoutId)
+  }, [url])
 
   const handleLoad = () => {
-    setLoaded(true)
-    setHasError(false)
+    setStatus('loaded')
   }
 
   const handleError = () => {
-    setLoaded('blocked')
-    setHasError(true)
+    setStatus('error')
   }
 
   if (!url) {
@@ -53,7 +57,7 @@ export default function LinkPreview({ url, isActive }) {
       
       <div className="flex-1 relative">
         {/* ローディング状態 */}
-        {loaded === false && (
+        {status === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center bg-white">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -62,8 +66,8 @@ export default function LinkPreview({ url, isActive }) {
           </div>
         )}
         
-        {/* 埋め込みブロック時のフォールバック */}
-        {loaded === 'blocked' && (
+        {/* 埋め込みブロック・エラー時のフォールバック */}
+        {(status === 'blocked' || status === 'error') && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
             <div className="text-center max-w-md mx-auto p-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -75,13 +79,19 @@ export default function LinkPreview({ url, isActive }) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-800 font-medium">
-                      このサイトは埋め込みが許可されていない可能性があります
+                      {status === 'blocked' 
+                        ? 'このサイトは埋め込みが許可されていない可能性があります'
+                        : '読み込みエラーが発生しました'
+                      }
                     </p>
                   </div>
                 </div>
               </div>
               <p className="text-gray-600 mb-4 text-sm">
-                サイトの設定（X-Frame-Options や CSP）により、プレビューを表示できませんでした。<br/>
+                {status === 'blocked' 
+                  ? 'サイトの設定（X-Frame-Options や CSP）により、プレビューを表示できませんでした。'
+                  : 'ネットワークエラーまたは無効なURLです。'
+                }<br/>
                 下のボタンから新しいタブで開いてご覧ください。
               </p>
               <a 
@@ -100,7 +110,7 @@ export default function LinkPreview({ url, isActive }) {
         )}
 
         {/* 正常に読み込まれた場合のiframe */}
-        {loaded !== 'blocked' && (
+        {status !== 'blocked' && status !== 'error' && (
           <iframe
             src={url}
             className="w-full h-full border-0"

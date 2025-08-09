@@ -167,35 +167,63 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       </div>
 
       {/* 詳細プログレスバー - セクション分け */}
-      <div className="w-full bg-gray-200 h-3 relative">
-        {/* 各スライドのマーカー */}
-        {slides.map((_, index) => (
-          <div
-            key={index}
-            className="absolute top-0 bottom-0 border-l border-gray-300"
-            style={{ left: `${(index / slides.length) * 100}%` }}
-          >
-            <div className="absolute -top-6 left-0 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
-              {index + 1}
-            </div>
+      <div className="bg-gray-100 px-4 py-2">
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-sm font-medium text-gray-700">
+            {currentSlide + 1}/{slides.length} {slides[currentSlide] ? slides[currentSlide].title.split('（')[0] : ''}
           </div>
-        ))}
-        
-        {/* 全体の進行バー */}
-        <div 
-          className="bg-blue-600 h-full transition-all duration-1000 ease-linear relative"
-          style={{ width: `${progress}%` }}
-        >
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-800"></div>
+          <div className="text-sm text-gray-600">
+            残り {Math.floor(timeRemaining)}秒
+          </div>
         </div>
         
-        {/* 現在のスライド位置マーカー */}
-        <div
-          className="absolute top-0 bottom-0 w-1 bg-red-500 transition-all duration-300"
-          style={{ left: `${(currentSlide / slides.length) * 100}%` }}
-        >
-          <div className="absolute -top-4 left-0 transform -translate-x-1/2 text-xs font-medium text-red-600">
-            ▼
+        <div className="w-full bg-gray-200 h-3 relative rounded-full overflow-hidden">
+          {/* 各スライドの区切り線 */}
+          {slides.map((slide, index) => (
+            <div key={index}>
+              {/* セクション境界線 */}
+              {index > 0 && (
+                <div
+                  className="absolute top-0 bottom-0 border-l-2 border-gray-400 z-10"
+                  style={{ left: `${(index / slides.length) * 100}%` }}
+                />
+              )}
+              
+              {/* セクションラベル */}
+              <div
+                className="absolute -top-6 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap font-medium"
+                style={{ left: `${((index + 0.5) / slides.length) * 100}%` }}
+              >
+                {slide.title.split('（')[0]}
+              </div>
+            </div>
+          ))}
+          
+          {/* 全体の進行バー */}
+          <div 
+            className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-1000 ease-linear relative"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-800 shadow-lg"></div>
+          </div>
+          
+          {/* 現在のスライド範囲ハイライト */}
+          <div
+            className="absolute top-0 bottom-0 bg-red-500 bg-opacity-20 transition-all duration-300"
+            style={{ 
+              left: `${(currentSlide / slides.length) * 100}%`,
+              width: `${100 / slides.length}%`
+            }}
+          />
+          
+          {/* 現在のスライド位置マーカー */}
+          <div
+            className="absolute top-0 bottom-0 w-1 bg-red-500 transition-all duration-300 z-20"
+            style={{ left: `${(currentSlide / slides.length) * 100}%` }}
+          >
+            <div className="absolute -top-5 left-0 transform -translate-x-1/2 text-xs font-bold text-red-600">
+              ▼
+            </div>
           </div>
         </div>
       </div>

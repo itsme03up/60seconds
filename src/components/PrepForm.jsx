@@ -3,6 +3,23 @@ import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
 import { Input } from './ui/input'
 import { useDebounce } from '../hooks/useDebounce'
+import { z } from 'zod'
+
+// データバリデーション用スキーマ
+const PrepDataSchema = z.object({
+  point: z.string().default(''),
+  reason: z.string().default(''),
+  example: z.string().default(''),
+  summary: z.string().default(''),
+  referenceLink: z.string().url().or(z.string().length(0)).default('')
+})
+
+const ExportDataSchema = z.object({
+  version: z.string().optional(),
+  createdAt: z.string().optional(),
+  appName: z.string().optional(),
+  prepData: PrepDataSchema
+})
 
 export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
   const fileInputRef = useRef(null)
@@ -52,15 +69,26 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
       const reader = new FileReader()
       reader.onload = (e) => {
         try {
-          const imported = JSON.parse(e.target.result)
-          if (imported.prepData) {
-            setPrepData(imported.prepData)
-            alert('データを正常にインポートしました！')
+          const rawData = JSON.parse(e.target.result)
+          
+          // バリデーション実行
+          const validationResult = ExportDataSchema.safeParse(rawData)
+          
+          if (validationResult.success) {
+            setPrepData(validationResult.data.prepData)
+            alert('✅ データを正常にインポートしました！')
           } else {
-            alert('無効なファイル形式です。')
+            // フォールバック: 部分的なデータでも可能な限り復元
+            const fallbackResult = PrepDataSchema.safeParse(rawData.prepData || rawData)
+            if (fallbackResult.success) {
+              setPrepData(fallbackResult.data)
+              alert('⚠️ 一部のデータが無効でしたが、可能な範囲でインポートしました。')
+            } else {
+              alert('❌ 無効なファイル形式です。\n\n対応形式:\n- point, reason, example, summary (文字列)\n- referenceLink (有効なURL)')
+            }
           }
         } catch (error) {
-          alert('ファイルの読み込みに失敗しました。')
+          alert('❌ ファイルの読み込みに失敗しました。\nJSONファイルを選択してください。')
         }
       }
       reader.readAsText(file)

@@ -43,3 +43,18 @@
   opacity: 0;
   transform: translateX(-100%);
 }
+
+/* アクセシビリティ: アニメーション削減設定 */
+@media (prefers-reduced-motion: reduce) {
+  .slide-in,
+  .fade-in,
+  .slide-content {
+    animation: none;
+    transition: none;
+  }
+  
+  .slide-content.active,
+  .slide-content.exit {
+    transform: none;
+  }
+}

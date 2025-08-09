@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import PrepForm from './components/PrepForm'
 import SlideShow from './components/SlideShow'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useLocalStorage } from './hooks/useLocalStorage'
 
 function App() {
@@ -39,10 +40,12 @@ function App() {
           onStartSlideshow={handleStartSlideshow}
         />
       ) : (
-        <SlideShow 
-          prepData={prepData}
-          onBackToEdit={handleBackToEdit}
-        />
+        <ErrorBoundary onReset={handleBackToEdit}>
+          <SlideShow 
+            prepData={prepData}
+            onBackToEdit={handleBackToEdit}
+          />
+        </ErrorBoundary>
       )}
     </div>
   )
