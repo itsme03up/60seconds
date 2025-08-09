@@ -26,20 +26,20 @@ export default function MarkdownSlide({ content, title, isActive, layout = 'cent
   return (
     <div className={`slide-content w-full h-full flex flex-col p-8 ${isActive ? 'active slide-in' : ''}`}>
       {layout === 'bottom' ? (
-        // Exampleスライド用レイアウト：参考リンクを中央、テキストを下部に
+        // Exampleスライド用レイアウト：左右分割（左：iframe、右：テキスト）
         <>
-          <div className="flex-1 flex flex-col justify-center items-center">
-            {title && (
-              <h2 className="text-4xl font-bold text-center mb-8 text-gray-900 fade-in">
-                {title}
-              </h2>
-            )}
-            
-            {/* 参考リンクを中央に表示 */}
-            {referenceLink && (
-              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 shadow-lg max-w-2xl w-full">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">参考リンク</h3>
-                <div className="aspect-video bg-gray-50 rounded border overflow-hidden">
+          {title && (
+            <h2 className="text-4xl font-bold text-center mb-6 text-gray-900 fade-in">
+              {title}
+            </h2>
+          )}
+          
+          <div className="flex-1 flex gap-6">
+            {/* 左側：参考リンクプレビュー */}
+            {referenceLink ? (
+              <div className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-4 shadow-lg flex flex-col">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">参考リンク</h3>
+                <div className="flex-1 bg-gray-50 rounded border overflow-hidden min-h-0">
                   <iframe
                     src={referenceLink}
                     className="w-full h-full border-0"
@@ -51,24 +51,31 @@ export default function MarkdownSlide({ content, title, isActive, layout = 'cent
                   href={referenceLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="block text-blue-600 hover:text-blue-800 break-all text-sm mt-2 text-center"
+                  className="block text-blue-600 hover:text-blue-800 break-all text-xs mt-2 text-center"
                 >
                   {referenceLink}
                 </a>
               </div>
+            ) : (
+              <div className="flex-1 bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500 text-center">参考リンクが設定されていません</p>
+              </div>
             )}
-          </div>
-          
-          {/* テキストを下部に表示 */}
-          <div className="bg-gray-50 rounded-lg p-6 mt-4">
-            <div 
-              className="prose prose-lg max-w-none text-gray-700 leading-relaxed fade-in"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-              style={{
-                fontSize: '1.1rem',
-                lineHeight: '1.6'
-              }}
-            />
+            
+            {/* 右側：テキストコンテンツ */}
+            <div className="flex-1 bg-gray-50 rounded-lg p-6 flex flex-col">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">具体例・事例</h3>
+              <div className="flex-1 overflow-y-auto">
+                <div 
+                  className="prose prose-lg max-w-none text-gray-700 leading-relaxed fade-in"
+                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  style={{
+                    fontSize: '1.1rem',
+                    lineHeight: '1.6'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </>
       ) : (
