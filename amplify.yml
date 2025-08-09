@@ -1,18 +1,25 @@
-# amplify.yml
+# amplify.yml（リポジトリ直下）
 version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - npm ci
-    build:
-      commands:
-        - npm run build
-  artifacts:
-    baseDirectory: dist
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**/*
-  runtime: nodejs18
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - corepack enable || true
+            - npm ci
+        build:
+          commands:
+            - npm run build             # → dist/ が出力される
+      artifacts:
+        baseDirectory: dist            # ← 必ず dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+    # Backend を一緒にデプロイしたい場合だけ下を有効化
+    # backend:
+    #   phases:
+    #     build:
+    #       commands:
+    #         - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
