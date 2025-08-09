@@ -232,6 +232,12 @@ export default function SlideShow({ prepData, onBackToEdit }) {
             const sectionStart = (edges[index - 1] || 0) / total * 100
             const sectionWidth = duration / total * 100
             const colors = [
+                'bg-sky-100',
+                'bg-teal-100',
+                'bg-amber-100',
+                'bg-indigo-100'
+            ]
+            const accents = [
                 'ring-sky-400',
                 'ring-teal-400',
                 'ring-amber-400',
@@ -241,7 +247,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
             return (
               <div
                 key={`section-${index}`}
-                className={`absolute top-0 bottom-0 ${colors[index]} transition-all duration-300`}
+                className={`absolute top-0 bottom-0 ${colors[index]} ${accents[index]} ring-1 text-slate-800 transition-all duration-300`}
                 style={{ 
                   left: `${sectionStart}%`,
                   width: `${sectionWidth}%`
