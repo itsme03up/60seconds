@@ -12,14 +12,15 @@ export default function SlideShow({ prepData, onBackToEdit }) {
   const slides = [
     { type: 'slide', title: 'Point（要点・結論）', content: prepData.point },
     { type: 'slide', title: 'Reason（理由・根拠）', content: prepData.reason },
-    { type: 'slide', title: 'Example（具体例・事例）', content: prepData.example },
+    { 
+      type: 'slide', 
+      title: 'Example（具体例・事例）', 
+      content: prepData.example,
+      layout: 'bottom',
+      referenceLink: prepData.referenceLink
+    },
     { type: 'slide', title: 'Summary（まとめ）', content: prepData.summary },
   ]
-
-  // 参考リンクがある場合はReasonの後に挿入
-  if (prepData.referenceLink) {
-    slides.splice(2, 0, { type: 'link', url: prepData.referenceLink })
-  }
 
   // 自動スライド送り
   useEffect(() => {
@@ -41,6 +42,52 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       }, 500)
     }
   }, [isCompleted])
+
+  // キーボードショートカット
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // フォーカスが入力要素にある場合は無視
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return
+      }
+
+      switch (event.key) {
+        case ' ':
+          event.preventDefault()
+          if (isRunning) {
+            pause()
+          } else {
+            start()
+          }
+          break
+        case 'ArrowLeft':
+          event.preventDefault()
+          handlePrevSlide()
+          break
+        case 'ArrowRight':
+          event.preventDefault()
+          handleNextSlide()
+          break
+        case 'Escape':
+          event.preventDefault()
+          onBackToEdit()
+          break
+        case 'Home':
+          event.preventDefault()
+          setCurrentSlide(0)
+          break
+        case 'End':
+          event.preventDefault()
+          setCurrentSlide(slides.length - 1)
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [isRunning, currentSlide, slides.length, start, pause, onBackToEdit])
 
   const handlePrevSlide = () => {
     console.log('Previous button clicked, current slide:', currentSlide)
@@ -73,7 +120,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
         <div className="flex items-center space-x-4">
           <div className="text-right">
-            <div className="text-2xl font-mono font-bold">
+            <div 
+              className="text-2xl font-mono font-bold"
+              aria-live="polite"
+              aria-label={`経過時間 ${formatTime(timeElapsed)}`}
+            >
               {formatTime(timeElapsed)}
             </div>
             <div className="text-sm text-gray-300">
@@ -107,7 +158,11 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       </div>
 
       {/* メインスライドエリア */}
-      <div className="flex-1 relative overflow-hidden">
+      <div 
+        className="flex-1 relative overflow-hidden"
+        role="region"
+        aria-label={slides[currentSlide] ? slides[currentSlide].title || 'スライド' : 'スライド'}
+      >
         {slides.length > 0 ? (
           slides.map((slide, index) => (
             <div
@@ -121,6 +176,8 @@ export default function SlideShow({ prepData, onBackToEdit }) {
                   title={slide.title}
                   content={slide.content}
                   isActive={index === currentSlide}
+                  layout={slide.layout || 'center'}
+                  referenceLink={slide.referenceLink}
                 />
               ) : (
                 <LinkPreview

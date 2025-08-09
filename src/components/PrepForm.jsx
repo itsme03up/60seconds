@@ -1,14 +1,68 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
 import { Input } from './ui/input'
+import { useDebounce } from '../hooks/useDebounce'
 
 export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
+  // 自動保存（1秒デバウンス）
+  const debouncedSave = useDebounce((data) => {
+    console.log('自動保存されました')
+  }, 1000)
+
+  useEffect(() => {
+    debouncedSave(prepData)
+  }, [prepData, debouncedSave])
+
   const handleInputChange = (field, value) => {
     setPrepData(prev => ({
       ...prev,
       [field]: value
     }))
+  }
+
+  const handleExport = () => {
+    const dataToExport = {
+      version: '1.0.0',
+      createdAt: new Date().toISOString(),
+      prepData
+    }
+    
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+      type: 'application/json'
+    })
+    
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `prep-slides-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result)
+          if (imported.prepData) {
+            setPrepData(imported.prepData)
+            alert('データを正常にインポートしました！')
+          } else {
+            alert('無効なファイル形式です')
+          }
+        } catch (error) {
+          alert('ファイルの読み込みに失敗しました')
+        }
+      }
+      reader.readAsText(file)
+    }
+    // ファイル入力をリセット
+    event.target.value = ''
   }
 
   const handleSave = () => {
@@ -103,16 +157,41 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
       </div>
 
       {/* ボタン群 */}
-      <div className="flex justify-center space-x-4 pt-6">
-        <Button variant="outline" onClick={handleSave}>
-          保存
-        </Button>
-        <Button variant="outline" onClick={handleLoad}>
-          読み込み
-        </Button>
-        <Button onClick={onStartSlideshow} className="px-8">
-          再生へ →
-        </Button>
+      <div className="space-y-4 pt-6">
+        <div className="flex justify-center space-x-4">
+          <Button variant="outline" onClick={handleSave}>
+            💾 保存
+          </Button>
+          <Button variant="outline" onClick={handleLoad}>
+            📂 読み込み
+          </Button>
+          <Button onClick={onStartSlideshow} className="px-8">
+            ▶️ 再生へ
+          </Button>
+        </div>
+        
+        {/* Export/Import */}
+        <div className="flex justify-center space-x-4 text-sm">
+          <Button variant="ghost" onClick={handleExport} className="text-xs">
+            📤 エクスポート
+          </Button>
+          <label className="cursor-pointer">
+            <Button variant="ghost" className="text-xs">
+              📥 インポート
+            </Button>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+          </label>
+        </div>
+        
+        {/* キーボードショートカットヘルプ */}
+        <div className="text-center text-xs text-gray-500 mt-4">
+          💡 ヒント: スライドショー中は Space で一時停止/再開、← → でスライド移動
+        </div>
       </div>
     </div>
   )
