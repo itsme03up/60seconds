@@ -1,0 +1,24 @@
+# amplify.yml
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - npm run build     # Vite: dist/ が出力される
+      artifacts:
+        baseDirectory: dist     # ← ビルド成果物の出力ディレクトリ
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+    # Gen2 Backend を一緒にデプロイする場合
+    backend:
+      phases:
+        build:
+          commands:
+            - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
