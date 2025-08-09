@@ -51,7 +51,11 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
       version: '1.0.0',
       createdAt: new Date().toISOString(),
       appName: '60秒PREPスライド',
-      prepData
+      prepData: {
+        ...prepData,
+        // タイトル情報も含める
+        title: `PREP資料 - ${new Date().toLocaleDateString()}`
+      }
     }
     
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
@@ -61,7 +65,10 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `prep-slides-${new Date().toISOString().split('T')[0]}.json`
+    const fileName = prepData.deckId 
+      ? `prep-deck-${prepData.deckId}-${new Date().toISOString().split('T')[0]}.json`
+      : `prep-slides-${new Date().toISOString().split('T')[0]}.json`
+    a.download = fileName
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -106,15 +113,16 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
     fileInputRef.current?.click()
   }
 
+  // ローカルストレージ機能
   const handleSave = () => {
     // useLocalStorageフックにより自動保存されているため、確認メッセージのみ
-    alert('データがローカルストレージに保存されました！')
+    alert('💾 データがローカルストレージに保存されました！\n（入力と同時に自動保存されています）')
   }
 
   const handleLoad = () => {
     // useLocalStorageフックによって自動的に読み込まれるため、
     // ここでは確認メッセージのみ表示
-    alert('データを読み込みました！\n現在の内容がローカルストレージから復元されています。')
+    alert('📂 データを読み込みました！\n現在の内容がローカルストレージから復元されています。')
   }
 
   // クラウド保存機能
@@ -206,8 +214,9 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
           PREP法（Point/Reason/Example/Summary）に基づくスライドを作成しましょう
         </p>
         {prepData.deckId && (
-          <div className="mt-2 text-xs text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full">
-            ☁️ Deck ID: {prepData.deckId}
+          <div className="mt-3 text-xs bg-blue-50 inline-block px-4 py-2 rounded-full border border-blue-200">
+            <span className="text-blue-800 font-medium">☁️ クラウド保存済み:</span>
+            <span className="text-blue-600 ml-2 font-mono">{prepData.deckId}</span>
           </div>
         )}
       </div>
@@ -282,55 +291,88 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
         </p>
       </div>
 
-      {/* ボタン群 */}
+      {/* メインアクション */}
       <div className="space-y-4 pt-6">
-        <div className="flex justify-center space-x-4">
-          <Button variant="outline" onClick={handleSave}>
-            💾 ローカル保存
-          </Button>
-          <Button variant="outline" onClick={handleLoad}>
-            📂 ローカル読み込み
-          </Button>
-          <Button onClick={onStartSlideshow} className="px-8">
-            ▶️ 再生へ
+        <div className="flex justify-center">
+          <Button onClick={onStartSlideshow} className="px-12 py-3 text-lg bg-green-600 hover:bg-green-700">
+            ▶️ スライドショー開始
           </Button>
         </div>
         
-        {/* クラウド機能 */}
-        <div className="flex justify-center space-x-4">
-          <Button 
-            variant="outline" 
-            onClick={handleSaveToCloud}
-            disabled={isCloudSaving}
-            className="text-blue-600 border-blue-300 hover:bg-blue-50"
-          >
-            {isCloudSaving ? '☁️ 保存中...' : '☁️ クラウド保存'}
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={handleListCloudDecks}
-            disabled={isCloudLoading}
-            className="text-green-600 border-green-300 hover:bg-green-50"
-          >
-            {isCloudLoading ? '☁️ 読み込み中...' : '☁️ クラウド読み込み'}
-          </Button>
-        </div>
-        
-        {/* Export/Import */}
-        <div className="flex justify-center space-x-4 text-sm">
-          <Button variant="ghost" onClick={handleExport} className="text-xs">
-            📤 エクスポート
-          </Button>
-          <Button variant="ghost" onClick={triggerImport} className="text-xs">
-            📥 インポート
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
+        {/* データ管理セクション */}
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-medium text-gray-700 text-center mb-4">
+            💾 データ管理
+          </h3>
+          
+          {/* ローカルストレージ */}
+          <div className="mb-4">
+            <h4 className="text-xs font-medium text-gray-600 text-center mb-2">
+              📱 ローカル保存（このブラウザのみ）
+            </h4>
+            <div className="flex justify-center space-x-3">
+              <Button variant="outline" onClick={handleSave} size="sm" className="text-gray-600">
+                💾 ローカル保存確認
+              </Button>
+              <Button variant="outline" onClick={handleLoad} size="sm" className="text-gray-600">
+                📂 ローカル読み込み確認
+              </Button>
+            </div>
+          </div>
+          
+          {/* クラウドストレージ */}
+          <div className="mb-4">
+            <h4 className="text-xs font-medium text-gray-600 text-center mb-2">
+              ☁️ クラウド保存（どこからでもアクセス）
+            </h4>
+            <div className="flex justify-center space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={handleSaveToCloud}
+                disabled={isCloudSaving}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                size="sm"
+              >
+                {isCloudSaving ? '☁️ 保存中...' : '☁️ クラウド保存'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleListCloudDecks}
+                disabled={isCloudLoading}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                size="sm"
+              >
+                {isCloudLoading ? '📋 読み込み中...' : '📋 クラウド一覧'}
+              </Button>
+            </div>
+          </div>
+          
+          {/* ファイル操作 */}
+          <div className="mb-4">
+            <h4 className="text-xs font-medium text-gray-600 text-center mb-2">
+              📁 ファイル操作（バックアップ・共有用）
+            </h4>
+            <div className="flex justify-center space-x-3">
+              <Button variant="ghost" onClick={handleExport} size="sm" className="text-xs">
+                📤 JSONエクスポート
+              </Button>
+              <Button variant="ghost" onClick={triggerImport} size="sm" className="text-xs">
+                📥 JSONインポート
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </div>
+          </div>
+          
+          {/* 自動保存の説明 */}
+          <div className="text-center text-xs text-gray-500 bg-gray-50 p-2 rounded">
+            💡 入力内容は自動的にブラウザに保存されます
+          </div>
         </div>
         
         {/* キーボードショートカットヘルプ */}
@@ -343,30 +385,35 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
       {showDecksList && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-hidden">
-            <div className="p-4 border-b">
-              <h3 className="text-lg font-semibold">☁️ クラウドに保存されたデッキ</h3>
-              <p className="text-sm text-gray-600 mt-1">読み込みたいデッキをクリックしてください</p>
+            <div className="p-4 border-b bg-blue-50">
+              <h3 className="text-lg font-semibold text-blue-900">☁️ クラウドに保存されたデッキ</h3>
+              <p className="text-sm text-blue-700 mt-1">読み込みたいデッキをクリックしてください</p>
             </div>
             <div className="overflow-y-auto max-h-64 p-4">
               {availableDecks.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
-                  保存されたデッキが見つかりませんでした
+                  <div className="text-4xl mb-2">📭</div>
+                  <p>保存されたデッキが見つかりませんでした</p>
+                  <p className="text-xs mt-1">まずはデッキを作成してクラウド保存してみてください</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {availableDecks.map((deck) => (
                     <div
                       key={deck.id}
-                      className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="border rounded-lg p-3 hover:bg-blue-50 cursor-pointer transition-colors group"
                       onClick={() => handleLoadFromCloud(deck.id)}
                     >
                       <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium text-sm text-gray-900">
-                            Deck ID: {deck.id}
+                        <div className="flex-1">
+                          <div className="font-medium text-sm text-gray-900 group-hover:text-blue-700">
+                            📄 {deck.title || `Deck ${deck.id.slice(0, 8)}`}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            更新: {deck.lastModified?.toLocaleString() || '不明'}
+                            ID: {deck.id}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            📅 更新: {deck.lastModified?.toLocaleString() || '不明'}
                           </div>
                         </div>
                         <button
@@ -375,13 +422,14 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
                             if (confirm('このデッキを削除してもよろしいですか？')) {
                               deleteDeck(deck.id).then(() => {
                                 setAvailableDecks(prev => prev.filter(d => d.id !== deck.id));
-                                alert('デッキを削除しました');
+                                alert('✅ デッキを削除しました');
                               }).catch(err => {
-                                alert('削除に失敗しました: ' + err.message);
+                                alert('❌ 削除に失敗しました: ' + err.message);
                               });
                             }
                           }}
-                          className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50"
+                          className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="デッキを削除"
                         >
                           🗑️
                         </button>
@@ -391,7 +439,7 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
                 </div>
               )}
             </div>
-            <div className="p-4 border-t flex justify-end">
+            <div className="p-4 border-t bg-gray-50 flex justify-end">
               <Button variant="outline" onClick={() => setShowDecksList(false)}>
                 キャンセル
               </Button>
@@ -399,34 +447,6 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
           </div>
         </div>
       )}
-
-      {/* クラウド保存・読み込み・一覧表示 */}
-      <div className="space-y-4">
-        <div className="flex justify-center space-x-4">
-          <Button variant="outline" onClick={handleSaveToCloud} disabled={isCloudSaving}>
-            ☁️ クラウド保存
-          </Button>
-          <Button variant="outline" onClick={handleListCloudDecks} disabled={isCloudLoading}>
-            ☁️ クラウド一覧
-          </Button>
-        </div>
-
-        {showDecksList && (
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-bold">クラウドデッキ一覧</h2>
-            <ul>
-              {availableDecks.map(deck => (
-                <li key={deck.id} className="flex justify-between py-2">
-                  <span>{deck.title}</span>
-                  <Button variant="link" onClick={() => handleLoadFromCloud(deck.id)}>
-                    読み込み
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
