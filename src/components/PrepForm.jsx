@@ -27,7 +27,7 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
   // 自動保存（1秒デバウンス）
   const debouncedSave = useDebounce((data) => {
     // 自動保存処理（ローカルストレージは useLocalStorage で自動管理）
-    console.log('Auto-saving data...', data)
+    // データの保存は useLocalStorage フックで自動的に行われます
   }, 1000)
 
   useEffect(() => {
