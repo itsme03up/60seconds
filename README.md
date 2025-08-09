@@ -1,53 +1,26 @@
 # 🎯 60秒 PREP スライドジェネレータ
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-y## 🔒 既知の制限事項
-
-### iframe埋め込み制限
-- **X-Frame-Options**: サイト側が埋め込みを禁止している場合は表示できません
-- **CSP (Content Security Policy)**: セキュリティ設定により表示がブロックされる場合があります
-- **HTTPS必須**: HTTPSサイトからHTTPサイトは埋め込めません
-
-### タイマー精度
-- **バックグラウンドタブ**: 長時間非アクティブになると僅かなドリフトが生じる可能性があります
-- **システム負荷**: 高負荷時にミリ秒レベルの誤差が発生する場合があります
-- **ブラウザスロットリング**: モバイルブラウザでの省電力モード時に影響を受けます
-
-### モバイル対応
-- **画面回転推奨**: スライドショーは横向き表示での使用を推奨します
-- **キーボードショートカット**: タッチ操作では一部機能が制限されます
-- **フルスクリーン**: ブラウザのアドレスバー表示により画面領域が制限されます
-
-### ブラウザ対応
-- **モダンブラウザ必須**: ES2020+、CSS Grid、Flexboxに対応したブラウザが必要です
-- **Internet Explorer**: 非対応です
-- **古いモバイルブラウザ**: iOS 12未満、Android 8未満では動作しない可能性があります
-
-### データ制限
-- **ローカルストレージ**: ブラウザの容量制限（通常5-10MB）に依存します
-- **JSON形式**: エクスポート/インポートは指定形式のJSONファイルのみ対応
-- **文字数制限**: 極端に長いテキストではレイアウトが崩れる可能性があります.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.0+-orange.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4.0-green.svg)](https://tailwindcss.com/)
+[![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-orange.svg)](https://aws.amazon.com/amplify/)
 
 **PREP法に基づく60秒プレゼンテーションを効率的に作成・練習できるWebアプリケーション**
 
-> 🚀 **[Live Demo](https://your-demo-url.vercel.app)** で実際に試してみてください！
+## 🌟 新機能：AWS Amplifyクラウドストレージ対応
 
-![Screenshot](https://via.placeholder.com/800x400/2563eb/ffffff?text=60秒+PREP+スライド+Screenshot)
-
-## 🎯 想定ユースケース
-
-- **📢 1分スピーチの練習** - 時間を意識した簡潔な発表の練習
-- **⚡ ライトニングトーク（LT）準備** - 短時間プレゼンの構成確認
-- **🌅 朝会での情報共有** - PREP法での効率的な報告
-- **📊 プレゼンテーション構成の確認** - 論理的な流れの検証
+- ☁️ **クラウド保存**: 作成したPREP資料をAWS S3に保存
+- 📱 **どこからでもアクセス**: 複数のデバイスから同じデータにアクセス
+- 🔒 **安全な共有**: デッキIDを使った簡単で安全なデータ共有
+- 📝 **自動バックアップ**: ローカルストレージと併用でデータの安全性向上
 
 ## ✨ 主な機能
 
 ### 📝 編集モード
 - **PREP構造** - Point/Reason/Example/Summary の各セクションをMarkdown形式で入力
 - **参考リンク** - ExampleスライドにiframeプレビューでURL表示
+- **☁️ クラウド機能** - AWS S3への保存・読み込み・デッキ管理
 - **自動保存** - 1秒デバウンスでリアルタイム保存
 - **データ管理** - JSON形式でのExport/Import機能
 

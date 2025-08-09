@@ -13,7 +13,8 @@ function App() {
     reason: '',
     example: '',
     summary: '',
-    referenceLink: ''
+    referenceLink: '',
+    deckId: '' // クラウド保存用のdeckId追加
   })
 
   const handleStartSlideshow = () => {

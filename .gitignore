@@ -26,3 +26,12 @@ Thumbs.db
 *.cache/
 .vscode/
 .idea/
+
+# Amplify
+amplify_outputs.json
+.amplify/
+.amplify-hosting/
+amplify/team-provider-info.json
+amplify/.config/
+amplify/cli.json
+.secret-*
