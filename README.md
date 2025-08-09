@@ -43,10 +43,12 @@
 | `Home` | ⏮️ 最初のスライド |
 | `End` | ⏭️ 最後のスライド |
 
-## � セットアップ
+## 🚀 セットアップ
+
+### 基本セットアップ
 
 ```bash
-# 依存ライブラリのインストール
+# 依存関係のインストール
 npm install
 
 # 開発サーバー起動
@@ -56,9 +58,38 @@ npm run dev
 npm run build
 ```
 
+### ☁️ AWS Amplifyクラウドストレージ設定（オプション）
+
+#### 前提条件
+- AWS CLIがインストールされていること
+- AWS認証が設定されていること (`aws configure`)
+
+#### Amplifyバックエンドのデプロイ
+
+```bash
+# 開発用サンドボックス環境で開始
+npm run amplify:sandbox
+
+# または本番環境にデプロイ
+npm run amplify:deploy
+```
+
+#### フロントエンド設定の更新
+デプロイ後、`amplify_outputs.json`が生成されるので、`src/main.jsx`を更新：
+
+```jsx
+import { Amplify } from "aws-amplify";
+import amplifyConfig from "../amplify_outputs.json";
+Amplify.configure(amplifyConfig);
+```
+
+> 💡 **注意**: Amplifyを設定しなくても、ローカルストレージ機能のみで使用可能です。
+
 ## 🏗️ 技術スタック
 
 - **フロントエンド**: React 18.2, Vite 5.0+
+- **バックエンド**: AWS Amplify Gen2
+- **ストレージ**: AWS S3 (Amplify Storage)
 - **スタイリング**: Tailwind CSS v4.0, shadcn/ui
 - **ユーティリティ**: Marked (Markdown parser), DOMPurify (XSS prevention)
 - **ビルドツール**: Vite + @tailwindcss/vite plugin
@@ -68,7 +99,7 @@ npm run build
 ```
 src/
 ├── components/
-│   ├── PrepForm.jsx         # PREP入力フォーム + Export/Import
+│   ├── PrepForm.jsx         # PREP入力フォーム + Export/Import + クラウド機能
 │   ├── MarkdownSlide.jsx    # Markdown→HTML + アニメーション
 │   ├── LinkPreview.jsx      # iframe プレビュー + フォールバック
 │   ├── SlideShow.jsx        # タイマー制御 + スライド切替
@@ -78,8 +109,15 @@ src/
 │   ├── useLocalStorage.js   # localStorage 同期
 │   ├── useTimer.js          # 高精度タイマー + visibilitychange対応
 │   └── useDebounce.js       # デバウンス処理
-└── lib/
-    └── utils.js             # ユーティリティ関数
+├── lib/
+│   ├── utils.js             # ユーティリティ関数
+│   └── cloudStorage.js      # AWS Amplify Storage API
+└── main.jsx                 # Amplify設定
+
+amplify/
+├── backend.ts               # Amplifyバックエンド設定
+└── storage/
+    └── resource.ts          # S3ストレージ設定
 ```
 
 ## 📄 データフォーマット
@@ -96,13 +134,26 @@ src/
     "reason": "理由・根拠をここに入力", 
     "example": "具体例・事例をここに入力",
     "summary": "まとめをここに入力",
-    "referenceLink": "https://example.com"
+    "referenceLink": "https://example.com",
+    "deckId": "cloud-deck-id-12345"  // クラウド保存時に追加
   }
 }
 ```
 
-**必須フィールド**: `prepData`オブジェクト内の各項目  
-**オプション**: `referenceLink`は空文字列または有効なURLを指定
+### クラウドストレージ形式
+
+```json
+{
+  "title": "PREP資料 - 2025/01/09",
+  "totalSec": 60,
+  "sections": [
+    { "key": "point",   "text": "...", "link": "https://..." },
+    { "key": "reason",  "text": "...", "link": "https://..." },
+    { "key": "example", "text": "...", "link": "https://..." },
+    { "key": "summary", "text": "...", "link": "https://..." }
+  ]
+}
+```
 
 ## � 既知の制限事項
 
