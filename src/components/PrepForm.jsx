@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Button } from './ui/button'
 import { Textarea } from './ui/textarea'
 import { Input } from './ui/input'
 import { useDebounce } from '../hooks/useDebounce'
 
 export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
+  const fileInputRef = useRef(null)
+
   // 自動保存（1秒デバウンス）
   const debouncedSave = useDebounce((data) => {
     // 自動保存処理（ローカルストレージは useLocalStorage で自動管理）
+    console.log('Auto-saving data...', data)
   }, 1000)
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
     const dataToExport = {
       version: '1.0.0',
       createdAt: new Date().toISOString(),
+      appName: '60秒PREPスライド',
       prepData
     }
     
@@ -53,10 +57,10 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
             setPrepData(imported.prepData)
             alert('データを正常にインポートしました！')
           } else {
-            alert('無効なファイル形式です')
+            alert('無効なファイル形式です。')
           }
         } catch (error) {
-          alert('ファイルの読み込みに失敗しました')
+          alert('ファイルの読み込みに失敗しました。')
         }
       }
       reader.readAsText(file)
@@ -65,14 +69,19 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
     event.target.value = ''
   }
 
+  const triggerImport = () => {
+    fileInputRef.current?.click()
+  }
+
   const handleSave = () => {
+    // useLocalStorageフックにより自動保存されているため、確認メッセージのみ
     alert('データがローカルストレージに保存されました！')
   }
 
   const handleLoad = () => {
     // useLocalStorageフックによって自動的に読み込まれるため、
     // ここでは確認メッセージのみ表示
-    alert('データを読み込みました！')
+    alert('データを読み込みました！\n現在の内容がローカルストレージから復元されています。')
   }
 
   return (
@@ -175,17 +184,16 @@ export default function PrepForm({ prepData, setPrepData, onStartSlideshow }) {
           <Button variant="ghost" onClick={handleExport} className="text-xs">
             📤 エクスポート
           </Button>
-          <label className="cursor-pointer">
-            <Button variant="ghost" className="text-xs">
-              📥 インポート
-            </Button>
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
-          </label>
+          <Button variant="ghost" onClick={triggerImport} className="text-xs">
+            📥 インポート
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            className="hidden"
+          />
         </div>
         
         {/* キーボードショートカットヘルプ */}

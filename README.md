@@ -1,66 +1,51 @@
-# 1分 PREP スライドジェネレータ
+# 🎯 60秒 PREP スライドジェネレータ
 
-PREP 法に基づくスライドを React/Vite + Tailwind v4 + shadcn/ui で作成・再生できるアプリケーションです。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-orange.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4.0-green.svg)](https://tailwindcss.com/)
+
+**PREP法に基づく60秒プレゼンテーションを効率的に作成・練習できるWebアプリケーション**
+
+> 🚀 **[Live Demo](https://your-demo-url.vercel.app)** で実際に試してみてください！
+
+![Screenshot](https://via.placeholder.com/800x400/2563eb/ffffff?text=60秒+PREP+スライド+Screenshot)
 
 ## 🎯 想定ユースケース
-- **1分スピーチの練習** - 時間を意識した簡潔な発表の練習
-- **ライトニングトーク（LT）準備** - 短時間プレゼンの構成確認
-- **朝会での情報共有** - PREP法での効率的な報告
-- **プレゼンテーション構成の確認** - 論理的な流れの検証
+
+- **📢 1分スピーチの練習** - 時間を意識した簡潔な発表の練習
+- **⚡ ライトニングトーク（LT）準備** - 短時間プレゼンの構成確認
+- **🌅 朝会での情報共有** - PREP法での効率的な報告
+- **📊 プレゼンテーション構成の確認** - 論理的な流れの検証
 
 ## ✨ 主な機能
 
 ### 📝 編集モード
-- PREP（Point/Reason/Example/Summary）の各セクションをMarkdown形式で入力
-- 参考リンクURL入力（Exampleスライドで中央表示）
-- **自動保存**（1秒デバウンス）
-- **Export/Import機能**（JSON形式）
+- **PREP構造** - Point/Reason/Example/Summary の各セクションをMarkdown形式で入力
+- **参考リンク** - ExampleスライドにiframeプレビューでURL表示
+- **自動保存** - 1秒デバウンスでリアルタイム保存
+- **データ管理** - JSON形式でのExport/Import機能
 
 ### 🎬 再生モード
-- **高精度60秒タイマー**（performance.now()使用）
-- スライドの自動切り替え + 手動ナビゲーション
-- **キーボードショートカット対応**
-- リアルタイム進捗バー
-- 参考リンクのiframeプレビュー（フォールバック機能付き）
+- **高精度タイマー** - `performance.now()`基準の正確な60秒計測
+- **自動スライド送り** - 各セクション15秒ずつの自動切り替え
+- **手動ナビゲーション** - キーボードショートカット対応
+- **視覚的フィードバック** - セクション分けされた詳細プログレスバー
+- **埋め込み対応** - iframe表示とフォールバック機能
 
 ## ⌨️ キーボードショートカット
+
 | キー | 機能 |
 |------|------|
-| `Space` | タイマー開始/一時停止 |
-| `←` | 前のスライド |
-| `→` | 次のスライド |
-| `Esc` | 編集モードへ戻る |
-| `Home` | 最初のスライド |
-| `End` | 最後のスライド |
+| `Space` | ⏯️ タイマー開始/一時停止 |
+| `←` | ⬅️ 前のスライド |
+| `→` | ➡️ 次のスライド |
+| `R` | 🔄 リセット（最初から再開） |
+| `Esc` | 📝 編集モードへ戻る |
+| `Home` | ⏮️ 最初のスライド |
+| `End` | ⏭️ 最後のスライド |
 
-## 🗂 ディレクトリ構成
-
-project-root/
-├── .github/
-│ └── copilot.md # Copilot 向け指示
-├── public/
-│ └── index.html
-├── src/
-│ ├── components/
-│ │ ├── PrepForm.jsx # PREP＋リンク入力フォーム
-│ │ ├── MarkdownSlide.jsx # Markdown→HTML＋アニメーション
-│ │ ├── LinkPreview.jsx # iframe プレビュー
-│ │ └── SlideShow.jsx # タイマー制御＋スライド切替
-│ ├── hooks/
-│ │ ├── useLocalStorage.js # localStorage 同期フック
-│ │ └── useTimer.js # 経過秒数カウントフック
-│ ├── App.jsx
-│ ├── index.css # Tailwind v4 一行インポート
-│ └── index.jsx
-├── .gitignore
-├── package.json
-└── README.md
-
-shell
-コピーする
-編集する
-
-## 🚀 セットアップ
+## � セットアップ
 
 ```bash
 # 依存ライブラリのインストール
@@ -71,26 +56,53 @@ npm run dev
 
 # ビルド
 npm run build
-⚙️ 主な機能
-編集モード
+```
 
-PREP（Point/Reason/Example/Summary）のテキストと参考リンクを Markdown で入力
+## 🏗️ 技術スタック
 
-ローカル保存／読み込み
+- **フロントエンド**: React 18.2, Vite 5.0+
+- **スタイリング**: Tailwind CSS v4.0, shadcn/ui
+- **ユーティリティ**: Marked (Markdown parser), DOMPurify (XSS prevention)
+- **ビルドツール**: Vite + @tailwindcss/vite plugin
 
-再生モード
+## 📁 プロジェクト構成
 
-1分（60秒）で自動スライド再生
+```
+src/
+├── components/
+│   ├── PrepForm.jsx         # PREP入力フォーム + Export/Import
+│   ├── MarkdownSlide.jsx    # Markdown→HTML + アニメーション
+│   ├── LinkPreview.jsx      # iframe プレビュー + フォールバック
+│   ├── SlideShow.jsx        # タイマー制御 + スライド切替
+│   └── ui/                  # shadcn/ui コンポーネント
+├── hooks/
+│   ├── useLocalStorage.js   # localStorage 同期
+│   ├── useTimer.js          # 高精度タイマー + visibilitychange対応
+│   └── useDebounce.js       # デバウンス処理
+└── lib/
+    └── utils.js             # ユーティリティ関数
+```
 
-右上に経過秒数をカウント表示
+## � 既知の制限事項
 
-各スライドに Markdown → HTML（太字や箇条書き）＆アニメーション表示
+- **iframe埋め込み** - サイト側の設定（X-Frame-Options、CSP）により表示できない場合があります
+- **タイマー精度** - 長時間バックグラウンドタブになると若干の時間ずれが生じる可能性があります
+- **ブラウザ対応** - モダンブラウザ（ES2020+）での動作を想定しています
 
-埋め込み可能なリンクを iframe でプレビュー
+## 🤝 コントリビューション
 
-📖 使い方
-テキストとリンクを編集モードで入力
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-「再生へ」ボタンをクリック
+## 📄 ライセンス
 
-1分間のスライドショーをお楽しみください
+このプロジェクトは [MIT License](LICENSE) の下で公開されています。
+
+## 🙏 謝辞
+
+- [PREP法](https://ja.wikipedia.org/wiki/PREP法) - 論理的な文章構成手法
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful React components
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework

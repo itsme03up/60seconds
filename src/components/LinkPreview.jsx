@@ -1,16 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 export default function LinkPreview({ url, isActive }) {
-  const [isLoading, setIsLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
 
+  // 2.5秒後に埋め込みブロック判定
+  useEffect(() => {
+    if (url && !loaded) {
+      const id = setTimeout(() => {
+        if (!loaded) {
+          setLoaded('blocked')
+        }
+      }, 2500)
+      return () => clearTimeout(id)
+    }
+  }, [loaded, url])
+
   const handleLoad = () => {
-    setIsLoading(false)
+    setLoaded(true)
     setHasError(false)
   }
 
   const handleError = () => {
-    setIsLoading(false)
+    setLoaded('blocked')
     setHasError(true)
   }
 
@@ -40,13 +52,18 @@ export default function LinkPreview({ url, isActive }) {
       </div>
       
       <div className="flex-1 relative">
-        {isLoading && (
+        {/* ローディング状態 */}
+        {loaded === false && (
           <div className="absolute inset-0 flex items-center justify-center bg-white">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 text-sm">プレビューを読み込み中...</p>
+            </div>
           </div>
         )}
         
-        {hasError ? (
+        {/* 埋め込みブロック時のフォールバック */}
+        {loaded === 'blocked' && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
             <div className="text-center max-w-md mx-auto p-6">
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -57,14 +74,14 @@ export default function LinkPreview({ url, isActive }) {
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-yellow-800">
-                      このサイトは埋め込みに対応していません
+                    <p className="text-sm text-yellow-800 font-medium">
+                      このサイトは埋め込みが許可されていない可能性があります
                     </p>
                   </div>
                 </div>
               </div>
               <p className="text-gray-600 mb-4 text-sm">
-                サイトの設定により、プレビューを表示できませんでした。<br/>
+                サイトの設定（X-Frame-Options や CSP）により、プレビューを表示できませんでした。<br/>
                 下のボタンから新しいタブで開いてご覧ください。
               </p>
               <a 
@@ -80,7 +97,10 @@ export default function LinkPreview({ url, isActive }) {
               </a>
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* 正常に読み込まれた場合のiframe */}
+        {loaded !== 'blocked' && (
           <iframe
             src={url}
             className="w-full h-full border-0"

@@ -1,82 +1,64 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from "react";
 
-export function useTimer(duration = 60) {
-  const [timeElapsed, setTimeElapsed] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const startTimeRef = useRef(null)
-  const pausedTimeRef = useRef(0)
-  const rafRef = useRef(null)
+export function useTimer(total = 60, playing = true) {
+  const [sec, setSec] = useState(0);
+  const startRef = useRef(0);
+  const rafRef = useRef(0);
+  const lastVisibilityRef = useRef(null);
 
-  const start = () => {
-    if (!isRunning) {
-      startTimeRef.current = performance.now() - pausedTimeRef.current * 1000
-      setIsRunning(true)
-    }
-  }
-
-  const pause = () => {
-    setIsRunning(false)
-    pausedTimeRef.current = timeElapsed
-  }
-
-  const reset = () => {
-    setIsRunning(false)
-    setTimeElapsed(0)
-    pausedTimeRef.current = 0
-    startTimeRef.current = null
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-  }
-
-  const stop = () => {
-    reset()
-  }
-
-  // 高精度タイマー（requestAnimationFrame使用）
+  // visibilitychange対応 - タブ非アクティブからの復帰時にドリフト補正
   useEffect(() => {
-    const updateTimer = () => {
-      if (isRunning && startTimeRef.current !== null) {
-        const now = performance.now()
-        const elapsed = Math.floor((now - startTimeRef.current) / 1000)
-        
-        if (elapsed >= duration) {
-          setTimeElapsed(duration)
-          setIsRunning(false)
-        } else {
-          setTimeElapsed(elapsed)
-          rafRef.current = requestAnimationFrame(updateTimer)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && lastVisibilityRef.current && playing) {
+        // タブが非アクティブだった時間を考慮してstartRefを補正
+        const now = performance.now();
+        const drift = now - lastVisibilityRef.current;
+        if (drift > 100) { // 100ms以上のドリフトがあった場合補正
+          startRef.current += drift;
         }
       }
-    }
+      lastVisibilityRef.current = performance.now();
+    };
 
-    if (isRunning) {
-      rafRef.current = requestAnimationFrame(updateTimer)
-    } else {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [playing]);
+
+  useEffect(() => {
+    if (!playing) {
+      cancelAnimationFrame(rafRef.current);
+      return;
+    }
+    
+    const base = performance.now() - sec * 1000;
+    startRef.current = base;
+    
+    const loop = () => {
+      const t = Math.min(total, (performance.now() - startRef.current) / 1000);
+      setSec(t);
+      if (t < total) {
+        rafRef.current = requestAnimationFrame(loop);
       }
-    }
+    };
+    
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [playing, total]);
 
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
-      }
-    }
-  }, [isRunning, duration])
-
-  const timeRemaining = duration - timeElapsed
-  const progress = (timeElapsed / duration) * 100
+  // 従来のAPIとの互換性を保つための追加プロパティ
+  const timeElapsed = sec;
+  const timeRemaining = total - sec;
+  const progress = (sec / total) * 100;
+  const isRunning = playing;
+  const isCompleted = sec >= total;
 
   return {
+    sec,
     timeElapsed,
     timeRemaining,
     progress,
     isRunning,
-    isCompleted: timeElapsed >= duration,
-    start,
-    pause,
-    reset,
-    stop
-  }
+    isCompleted,
+    setSec
+  };
 }

@@ -6,7 +6,8 @@ import LinkPreview from './LinkPreview'
 
 export default function SlideShow({ prepData, onBackToEdit }) {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const { timeElapsed, timeRemaining, progress, isRunning, isCompleted, start, pause, reset } = useTimer(60)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const { timeElapsed, timeRemaining, progress, isCompleted, setSec } = useTimer(60, isPlaying)
 
   // スライドデータの準備
   const slides = [
@@ -24,7 +25,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
   // 自動スライド送り
   useEffect(() => {
-    if (isRunning && timeElapsed > 0) {
+    if (isPlaying && timeElapsed > 0) {
       const slideInterval = 60 / slides.length // 各スライドの表示時間
       const targetSlide = Math.floor(timeElapsed / slideInterval)
       
@@ -32,7 +33,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
         setCurrentSlide(targetSlide)
       }
     }
-  }, [timeElapsed, isRunning, slides.length, currentSlide])
+  }, [timeElapsed, isPlaying, slides.length, currentSlide])
 
   // スライドショー完了時の処理
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
     }
   }, [isCompleted])
 
-  // キーボードショートカット
+  // キーボードショートカット（スペース：一時停止/再開、←/→：前後スライド、R：リセット）
   useEffect(() => {
     const handleKeyPress = (event) => {
       // フォーカスが入力要素にある場合は無視
@@ -54,11 +55,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
       switch (event.key) {
         case ' ':
           event.preventDefault()
-          if (isRunning) {
-            pause()
-          } else {
-            start()
-          }
+          setIsPlaying(prev => !prev)
           break
         case 'ArrowLeft':
           event.preventDefault()
@@ -67,6 +64,13 @@ export default function SlideShow({ prepData, onBackToEdit }) {
         case 'ArrowRight':
           event.preventDefault()
           setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
+          break
+        case 'r':
+        case 'R':
+          event.preventDefault()
+          setSec(0)
+          setCurrentSlide(0)
+          setIsPlaying(true)
           break
         case 'Escape':
           event.preventDefault()
@@ -87,7 +91,7 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [isRunning, start, pause, onBackToEdit, slides.length])
+  }, [onBackToEdit, slides.length, setSec])
 
   const handlePrevSlide = () => {
     setCurrentSlide(prev => Math.max(0, prev - 1))
@@ -95,6 +99,16 @@ export default function SlideShow({ prepData, onBackToEdit }) {
 
   const handleNextSlide = () => {
     setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))
+  }
+
+  const handleTogglePlay = () => {
+    setIsPlaying(prev => !prev)
+  }
+
+  const handleReset = () => {
+    setSec(0)
+    setCurrentSlide(0)
+    setIsPlaying(true)
   }
 
   const formatTime = (seconds) => {
@@ -111,9 +125,14 @@ export default function SlideShow({ prepData, onBackToEdit }) {
           <Button variant="outline" onClick={onBackToEdit} className="text-gray-900">
             ← 編集へ戻る
           </Button>
-          <span className="text-lg font-mono">
-            {slides.length > 0 ? `${currentSlide + 1} / ${slides.length}` : '0 / 0'}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-lg font-mono">
+              {slides.length > 0 ? `${currentSlide + 1} / ${slides.length}` : '0 / 0'}
+            </span>
+            <span className="text-sm text-gray-300">
+              {slides[currentSlide] ? slides[currentSlide].title.split('（')[0] : ''}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -121,38 +140,64 @@ export default function SlideShow({ prepData, onBackToEdit }) {
             <div 
               className="text-2xl font-mono font-bold"
               aria-live="polite"
-              aria-label={`経過時間 ${formatTime(timeElapsed)}`}
+              aria-label={`経過時間 ${formatTime(Math.floor(timeElapsed))}秒`}
             >
-              {formatTime(timeElapsed)}
+              {formatTime(Math.floor(timeElapsed))}
             </div>
             <div className="text-sm text-gray-300">
-              残り: {formatTime(timeRemaining)}
+              残り: {formatTime(Math.floor(timeRemaining))}
             </div>
           </div>
           
           <div className="flex space-x-2">
-            {!isRunning ? (
-              <Button onClick={start} variant="outline" className="text-gray-900">
+            {!isPlaying ? (
+              <Button onClick={handleTogglePlay} variant="outline" className="text-gray-900">
                 ▶ 開始
               </Button>
             ) : (
-              <Button onClick={pause} variant="outline" className="text-gray-900">
+              <Button onClick={handleTogglePlay} variant="outline" className="text-gray-900">
                 ⏸ 一時停止
               </Button>
             )}
-            <Button onClick={reset} variant="outline" className="text-gray-900">
+            <Button onClick={handleReset} variant="outline" className="text-gray-900">
               ⏹ リセット
             </Button>
           </div>
         </div>
       </div>
 
-      {/* プログレスバー */}
-      <div className="w-full bg-gray-200 h-2">
+      {/* 詳細プログレスバー - セクション分け */}
+      <div className="w-full bg-gray-200 h-3 relative">
+        {/* 各スライドのマーカー */}
+        {slides.map((_, index) => (
+          <div
+            key={index}
+            className="absolute top-0 bottom-0 border-l border-gray-300"
+            style={{ left: `${(index / slides.length) * 100}%` }}
+          >
+            <div className="absolute -top-6 left-0 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
+              {index + 1}
+            </div>
+          </div>
+        ))}
+        
+        {/* 全体の進行バー */}
         <div 
-          className="bg-blue-600 h-2 transition-all duration-1000 ease-linear"
+          className="bg-blue-600 h-full transition-all duration-1000 ease-linear relative"
           style={{ width: `${progress}%` }}
-        />
+        >
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-800"></div>
+        </div>
+        
+        {/* 現在のスライド位置マーカー */}
+        <div
+          className="absolute top-0 bottom-0 w-1 bg-red-500 transition-all duration-300"
+          style={{ left: `${(currentSlide / slides.length) * 100}%` }}
+        >
+          <div className="absolute -top-4 left-0 transform -translate-x-1/2 text-xs font-medium text-red-600">
+            ▼
+          </div>
+        </div>
       </div>
 
       {/* メインスライドエリア */}
