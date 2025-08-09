@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Play, Save, Upload, Download, Link as LinkIcon, Github } from "lucide-react"
+import { Play, Save, Upload, Download, Link as LinkIcon, Github, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -11,9 +11,11 @@ import PrepForm from './components/PrepForm'
 import SlideShow from './components/SlideShow'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useLocalStorage } from './hooks/useLocalStorage'
+import { newDeckId, saveDeck } from './lib/cloudStorage'
 
 function App() {
   const [mode, setMode] = useState('edit') // 'edit' | 'slideshow'
+  const [saving, setSaving] = useState(false) // クラウド保存中の状態管理
   
   // ローカルストレージと同期されたPREPデータ
   const [prepData, setPrepData] = useLocalStorage('prepSlideData', {
@@ -49,6 +51,40 @@ function App() {
     setMode('edit')
   }
 
+  // deckJsonを構築する関数
+  const buildDeckJson = () => ({
+    title: "1分 PREP",
+    totalSec: total,
+    durations: prepData.durations,
+    sections: [
+      { key: "point", text: prepData.point, link: "" },
+      { key: "reason", text: prepData.reason, link: "" },
+      { key: "example", text: prepData.example, link: "" },
+      { key: "summary", text: prepData.summary, link: "" }
+    ],
+    referenceLink: prepData.referenceLink
+  });
+
+  // クラウド保存のハンドラー
+  const onCloudSave = async () => {
+    try {
+      setSaving(true);
+      const id = prepData.deckId || newDeckId();
+      const json = buildDeckJson();
+      await saveDeck(id, json);
+      
+      // deckIdをprepDataに保存
+      setPrepData(prev => ({ ...prev, deckId: id }));
+
+      alert(`クラウド保存しました！\nID: ${id}`);
+    } catch (error) {
+      console.error('保存エラー:', error);
+      alert(`保存に失敗しました: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (mode === 'slideshow') {
     return (
       <ErrorBoundary onReset={handleBackToEdit}>
@@ -70,8 +106,15 @@ function App() {
               <span className="font-semibold text-white">60seconds</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white">
-                <Save className="mr-2 h-4 w-4" /> クラウド保存
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-white"
+                onClick={onCloudSave}
+                disabled={saving}
+              >
+                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                クラウド保存
               </Button>
               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleStartSlideshow}>
                 <Play className="mr-2 h-4 w-4" /> スライドショー開始
@@ -237,9 +280,17 @@ function App() {
 
                     <TabsContent value="cloud" className="space-y-2 mt-4">
                       <div className="flex gap-2">
-                        <Button><Upload className="mr-2 h-4 w-4" /> 保存</Button>
+                        <Button onClick={onCloudSave} disabled={saving}>
+                          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                          保存
+                        </Button>
                         <Button variant="outline"><Download className="mr-2 h-4 w-4" /> 一覧</Button>
                       </div>
+                      {prepData.deckId && (
+                        <div className="text-xs text-slate-500 mt-2">
+                          現在のDeck ID: {prepData.deckId}
+                        </div>
+                      )}
                     </TabsContent>
 
                     <TabsContent value="local" className="mt-4">
