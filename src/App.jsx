@@ -85,6 +85,131 @@ function App() {
     }
   };
 
+  // ローカルストレージのクリア機能
+  const onLocalClear = () => {
+    if (confirm('ローカルデータをクリアしますか？')) {
+      setPrepData({
+        point: '',
+        reason: '',
+        example: '',
+        summary: '',
+        referenceLink: '',
+        deckId: '',
+        durations: {
+          point: 15,
+          reason: 15,
+          example: 15,
+          summary: 15
+        }
+      });
+      alert('ローカルデータをクリアしました');
+    }
+  };
+
+  // ローカルストレージの内容を表示
+  const onShowLocalData = () => {
+    try {
+      const data = localStorage.getItem('prepSlideData');
+      if (data) {
+        const parsed = JSON.parse(data);
+        alert(`ローカルストレージの内容:\n${JSON.stringify(parsed, null, 2)}`);
+      } else {
+        alert('ローカルストレージにデータがありません');
+      }
+    } catch (error) {
+      alert(`エラー: ${error.message}`);
+    }
+  };
+
+  // JSONエクスポート機能
+  const onExportJSON = () => {
+    try {
+      const json = {
+        ...buildDeckJson(),
+        exportedAt: new Date().toISOString(),
+        appVersion: "1.0.0",
+        format: "60seconds-prep-data"
+      };
+      const dataStr = JSON.stringify(json, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `prep-slide-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      alert('JSONファイルをダウンロードしました');
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`エクスポートに失敗しました: ${error.message}`);
+    }
+  };
+
+  // JSONインポート機能
+  const onImportJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(e.target.result);
+          console.log('Imported JSON:', json);
+          
+          // JSONデータを検証・変換
+          let newPrepData = {
+            point: '',
+            reason: '',
+            example: '',
+            summary: '',
+            referenceLink: '',
+            deckId: '',
+            durations: {
+              point: 15,
+              reason: 15,
+              example: 15,
+              summary: 15
+            }
+          };
+
+          // 新しいフォーマット（sections配列）
+          if (json.sections && Array.isArray(json.sections)) {
+            json.sections.forEach(section => {
+              if (section.key && newPrepData.hasOwnProperty(section.key)) {
+                newPrepData[section.key] = section.text || '';
+              }
+            });
+          }
+          
+          // 古いフォーマット（直接プロパティ）との互換性
+          if (json.point !== undefined) newPrepData.point = json.point;
+          if (json.reason !== undefined) newPrepData.reason = json.reason;
+          if (json.example !== undefined) newPrepData.example = json.example;
+          if (json.summary !== undefined) newPrepData.summary = json.summary;
+          
+          // その他の設定
+          if (json.referenceLink) newPrepData.referenceLink = json.referenceLink;
+          if (json.deckId) newPrepData.deckId = json.deckId;
+          if (json.durations) newPrepData.durations = { ...newPrepData.durations, ...json.durations };
+          
+          setPrepData(newPrepData);
+          alert('JSONファイルをインポートしました');
+        } catch (error) {
+          console.error('Import error:', error);
+          alert(`インポートに失敗しました: ${error.message}\n\nJSONファイルの形式を確認してください。`);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   if (mode === 'slideshow') {
     return (
       <ErrorBoundary onReset={handleBackToEdit}>
@@ -293,14 +418,34 @@ function App() {
                       )}
                     </TabsContent>
 
-                    <TabsContent value="local" className="mt-4">
-                      <p className="text-sm text-slate-500">このブラウザのみで保持します。</p>
+                    <TabsContent value="local" className="mt-4 space-y-2">
+                      <p className="text-sm text-slate-500 mb-2">このブラウザのみで保持します。</p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={onLocalClear}>
+                          クリア
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={onShowLocalData}>
+                          内容確認
+                        </Button>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-2">
+                        データは自動でローカルストレージに保存されています
+                        <br />
+                        キー: prepSlideData
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="file" className="mt-4 space-y-2">
                       <div className="flex gap-2">
-                        <Button variant="outline">JSONエクスポート</Button>
-                        <Button variant="outline">JSONインポート</Button>
+                        <Button variant="outline" onClick={onExportJSON}>
+                          JSONエクスポート
+                        </Button>
+                        <Button variant="outline" onClick={onImportJSON}>
+                          JSONインポート
+                        </Button>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-2">
+                        JSONファイルでデータをバックアップ・復元できます
                       </div>
                     </TabsContent>
                   </Tabs>
